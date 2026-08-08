@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidToken       = errors.New("invalid token")
 )
 
 type Service struct {
@@ -42,9 +43,7 @@ func (s *Service) Register(ctx context.Context, email, password string) (*Users,
 
 	user, err := s.repo.CreateUser(ctx, email, string(hash))
 	if err != nil {
-		if errors.Is(err, ErrInvalidCredentials) {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return user, nil
@@ -53,9 +52,10 @@ func (s *Service) Register(ctx context.Context, email, password string) (*Users,
 func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, ErrInvalidCredentials) {
-			return "", err
+		if errors.Is(err, ErrUserNotFound) {
+			return "", ErrInvalidCredentials
 		}
+		return "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
@@ -77,6 +77,21 @@ func (s *Service) generateToken(user *Users) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.jwtSecret)
+}
+
+func (s *Service) ParseToken(tokenString string) (*Claims, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrInvalidToken
+		}
+		return s.jwtSecret, nil
+	})
+	if err != nil || !token.Valid {
+		return nil, ErrInvalidToken
+	}
+
+	return claims, nil
 }

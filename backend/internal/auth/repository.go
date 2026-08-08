@@ -64,8 +64,7 @@ func (r *PgxRepository) CreateUser(ctx context.Context, email, password_hash str
 }
 
 func (r *PgxRepository) GetUserByEmail(ctx context.Context, email string) (*Users, error) {
-	query :=
-		`
+	query := `
 	SELECT id, email, password_hash, created_at
 	FROM users
 	WHERE email = $1
