@@ -33,7 +33,7 @@ func main() {
 	}
 
 	repo := auth.NewPgxRepository(pool)
-	service := auth.NewService(repo, jwtSecret, 24*time.Hour)
+	service := auth.NewService(repo, jwtSecret, 15*time.Minute)
 	handler := auth.NewHandler(service)
 
 	mux := http.NewServeMux()
