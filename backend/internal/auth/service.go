@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -16,9 +19,10 @@ var (
 )
 
 type Service struct {
-	repo        Repository
-	jwtSecret   []byte
-	tokenExpiry time.Duration
+	repo          Repository
+	jwtSecret     []byte
+	tokenExpiry   time.Duration
+	refreshExpiry time.Duration
 }
 
 type Claims struct {
@@ -27,11 +31,12 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewService(repo Repository, jwtSecret string, tokenExpiry time.Duration) *Service {
+func NewService(repo Repository, jwtSecret string, tokenExpiry, refreshExpiry time.Duration) *Service {
 	return &Service{
-		repo:        repo,
-		jwtSecret:   []byte(jwtSecret),
-		tokenExpiry: tokenExpiry,
+		repo:          repo,
+		jwtSecret:     []byte(jwtSecret),
+		tokenExpiry:   tokenExpiry,
+		refreshExpiry: refreshExpiry,
 	}
 }
 
@@ -49,19 +54,35 @@ func (s *Service) Register(ctx context.Context, email, password string) (*Users,
 	return user, nil
 }
 
-func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
+func (s *Service) Login(ctx context.Context, email, password string) (string, string, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
-			return "", ErrInvalidCredentials
+			return "", "", ErrInvalidCredentials
 		}
-		return "", err
+		return "", "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return "", ErrInvalidCredentials
+		return "", "", ErrInvalidCredentials
 	}
-	return s.generateToken(user)
+
+	accessToken, err := s.generateToken(user)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshRawToken, err := generateRefreshTokenValue()
+	if err != nil {
+		return "", "", err
+	}
+
+	_, err = s.repo.CreateRefreshToken(ctx, user.Id, hashToken(refreshRawToken), time.Now().Add(s.refreshExpiry))
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshRawToken, nil
 }
 
 func (s *Service) generateToken(user *Users) (string, error) {
@@ -94,4 +115,21 @@ func (s *Service) ParseToken(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func generateRefreshTokenValue() (string, error) {
+	buf := make([]byte, 32)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(buf), nil
+}
+
+func hashToken(raw string) string {
+	sum := sha256.Sum256([]byte(raw))
+	return hex.EncodeToString(sum[:])
+}
+
+func (s *Service) Logout(ctx context.Context, tokenHash string) error {
+	return s.repo.RevokeRefreshToken(ctx, hashToken(tokenHash))
 }
