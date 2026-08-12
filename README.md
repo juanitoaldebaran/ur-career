@@ -2,23 +2,17 @@
 
 An AI career coach that turns a user's background, goals, and the job market into a personalised, evolving career roadmap.
 
-## Stack
-
-- **Frontend** — React + TypeScript *(not yet scaffolded)*
-- **Backend** — Go, stdlib `net/http` (method-pattern routing), `pgx/v5`
-- **Database** — PostgreSQL
 
 ## Status
 
-| Module | Status |
-|---|---|
-| `auth` — signup, login, JWT | in progress |
-| `profile` | not started |
-| `resume` | not started |
-| `roadmap` | not started |
-| `coach` (AI orchestrator) | not started |
-| `jobmarket` | not started |
-| frontend | not started |
+| Module 
+|----
+| `auth`
+| `profile` 
+| `resume` 
+| `roadmap` 
+| `coach` 
+| `jobmarket` 
 
 ## Backend
 

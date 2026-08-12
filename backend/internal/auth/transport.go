@@ -22,6 +22,7 @@ func NewHandler(service *Service) *Handler {
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
+	mux.HandleFunc("POST /auth/logout", h.Logout)
 	mux.Handle("GET /auth/me", h.Authenticate(http.HandlerFunc(h.Me)))
 }
 
@@ -34,7 +35,7 @@ func (h *Handler) Authenticate(next http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 		const prefix = "Bearer "
 		if !strings.HasPrefix(authHeader, prefix) {
-			writeError(w, http.StatusBadRequest, "missing or invalid authorization")
+			writeError(w, http.StatusUnauthorized, "missing or invalid authorization")
 			return
 		}
 
@@ -87,7 +88,19 @@ func (r LoginRequest) validate() error {
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (r LogoutRequest) validate() error {
+	if strings.TrimSpace(r.RefreshToken) == "" {
+		return errors.New("refresh_token is required")
+	}
+	return nil
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +145,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.service.Login(r.Context(), loginRequest.Email, loginRequest.Password)
+	accessToken, refreshToken, err := h.service.Login(r.Context(), loginRequest.Email, loginRequest.Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrUserNotFound):
@@ -146,9 +159,32 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		w,
 		http.StatusOK,
 		LoginResponse{
-			Token: token,
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
 		},
 	)
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	var logoutRequest LogoutRequest
+	if err := json.NewDecoder(r.Body).Decode(&logoutRequest); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := logoutRequest.validate(); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.service.Logout(r.Context(), logoutRequest.RefreshToken); err != nil {
+		if !errors.Is(err, ErrRefreshTokenNotFound) {
+			writeError(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 type MeResponse struct {
