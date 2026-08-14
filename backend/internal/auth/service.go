@@ -133,3 +133,44 @@ func hashToken(raw string) string {
 func (s *Service) Logout(ctx context.Context, tokenHash string) error {
 	return s.repo.RevokeRefreshToken(ctx, hashToken(tokenHash))
 }
+
+func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (string, string, error) {
+	tokenHash := hashToken(rawRefreshToken)
+
+	refreshToken, err := s.repo.GetRefreshToken(ctx, tokenHash)
+	if err != nil {
+		if errors.Is(err, ErrRefreshTokenNotFound) {
+			return "", "", ErrInvalidToken
+		}
+		return "", "", err
+	}
+
+	if refreshToken.RevokedAt != nil || time.Now().After(refreshToken.ExpiresAt) {
+		return "", "", ErrInvalidToken
+	}
+
+	user, err := s.repo.GetUserByID(ctx, refreshToken.UserID)
+	if err != nil {
+		return "", "", err
+	}
+
+	if err := s.repo.RevokeRefreshToken(ctx, tokenHash); err != nil {
+		return "", "", err
+	}
+
+	accessToken, err := s.generateToken(user)
+	if err != nil {
+		return "", "", err
+	}
+
+	newRawRefreshToken, err := generateRefreshTokenValue()
+	if err != nil {
+		return "", "", err
+	}
+
+	if _, err := s.repo.CreateRefreshToken(ctx, user.Id, hashToken(newRawRefreshToken), time.Now().Add(s.refreshExpiry)); err != nil {
+		return "", "", err
+	}
+
+	return accessToken, newRawRefreshToken, nil
+}

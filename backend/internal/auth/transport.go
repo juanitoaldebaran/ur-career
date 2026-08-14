@@ -23,6 +23,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
 	mux.HandleFunc("POST /auth/logout", h.Logout)
+	mux.HandleFunc("POST /auth/refresh", h.Refresh)
 	mux.Handle("GET /auth/me", h.Authenticate(http.HandlerFunc(h.Me)))
 }
 
@@ -56,16 +57,6 @@ type RegisterRequest struct {
 	Password string `json:"password"`
 }
 
-func (r RegisterRequest) validate() error {
-	if strings.TrimSpace(r.Email) == "" || !strings.Contains(r.Email, "@") {
-		return errors.New("a valid email is required")
-	}
-	if len(r.Password) < 8 {
-		return errors.New("password must be at least 8 characters")
-	}
-	return nil
-}
-
 type RegisterResponse struct {
 	Id        string    `json:"id"`
 	Email     string    `json:"email"`
@@ -77,16 +68,6 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func (r LoginRequest) validate() error {
-	if strings.TrimSpace(r.Email) == "" {
-		return errors.New("email is required")
-	}
-	if r.Password == "" {
-		return errors.New("password is required")
-	}
-	return nil
-}
-
 type LoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -96,7 +77,43 @@ type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (r LogoutRequest) validate() error {
+type RefreshResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (r RegisterRequest) validate() error {
+	if strings.TrimSpace(r.Email) == "" || !strings.Contains(r.Email, "@") {
+		return errors.New("a valid email is required")
+	}
+	if len(r.Password) < 8 {
+		return errors.New("password must be at least 8 characters")
+	}
+	return nil
+}
+
+func (r LoginRequest) validateLogin() error {
+	if strings.TrimSpace(r.Email) == "" {
+		return errors.New("email is required")
+	}
+	if r.Password == "" {
+		return errors.New("password is required")
+	}
+	return nil
+}
+
+func (r LogoutRequest) validateLogout() error {
+	if strings.TrimSpace(r.RefreshToken) == "" {
+		return errors.New("refresh_token is required")
+	}
+	return nil
+}
+
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (r RefreshRequest) validateRefresh() error {
 	if strings.TrimSpace(r.RefreshToken) == "" {
 		return errors.New("refresh_token is required")
 	}
@@ -140,7 +157,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := loginRequest.validate(); err != nil {
+	if err := loginRequest.validateLogin(); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -166,18 +183,18 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	var logoutRequest LogoutRequest
-	if err := json.NewDecoder(r.Body).Decode(&logoutRequest); err != nil {
+	var logOut LogoutRequest
+	if err := json.NewDecoder(r.Body).Decode(&logOut); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	if err := logoutRequest.validate(); err != nil {
+	if err := logOut.validateLogout(); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := h.service.Logout(r.Context(), logoutRequest.RefreshToken); err != nil {
+	if err := h.service.Logout(r.Context(), logOut.RefreshToken); err != nil {
 		if !errors.Is(err, ErrRefreshTokenNotFound) {
 			writeError(w, http.StatusInternalServerError, "internal server error")
 			return
@@ -185,6 +202,35 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	var refreshRequest RefreshRequest
+	if err := json.NewDecoder(r.Body).Decode(&refreshRequest); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := refreshRequest.validateRefresh(); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid refresh request")
+		return
+	}
+
+	accessToken, refreshToken, err := h.service.Refresh(r.Context(), refreshRequest.RefreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidToken), errors.Is(err, ErrUserNotFound):
+			writeError(w, http.StatusUnauthorized, "invalid or expired refresh token")
+		default:
+			writeError(w, http.StatusInternalServerError, "internal server error")
+		}
+		return
+	}
+
+	writeJSON(w, http.StatusOK, RefreshResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 }
 
 type MeResponse struct {
