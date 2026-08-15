@@ -40,7 +40,8 @@ func main() {
 	handler.RegisterRoutes(mux)
 
 	log.Printf("listening on :%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	log.Println("Server has been started successfully")
+	if err := http.ListenAndServe(":"+port, corsEnable(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -63,4 +64,19 @@ func loadEnvironment() (databaseUrl, jwtSecretKey, portValue string) {
 
 	return databaseUrl, jwtSecretKey, portValue
 
+}
+
+func corsEnable(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
