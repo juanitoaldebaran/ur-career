@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-svh items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-900">You&apos;re logged in</h1>
+        <h1 className="text-xl font-semibold text-slate-900">Welcome&apos;You have been logged in</h1>
         <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
         <button
           onClick={() => void logout()}
