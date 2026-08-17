@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { ApiError } from '../lib/api'
 import PasswordField from '../components/PasswordField'
+import Spinner from '../components/Spinner'
 
 export default function RegisterPage() {
   const { register } = useAuth()
@@ -12,6 +13,9 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const passwordsMatch = password === confirmPassword && password.length > 0;
+  const passwordsMismatch = password !== confirmPassword && confirmPassword.length > 0;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -61,13 +65,17 @@ export default function RegisterPage() {
             helperText="At least 8 characters."
           />
 
-          <PasswordField
-            label="Confirm password"
-            value={confirmPassword}
-            onChange={setConfirmPassword}
-            autoComplete="new-password"
-            required
-          />
+          <div className="flex flex-col gap-1">
+            <PasswordField
+              label="Confirm password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+              required
+            />
+            {passwordsMatch && <p className="text-xs text-green-600">Passwords match.</p>}
+            {passwordsMismatch && <p className="text-xs text-red-600">Passwords do not match.</p>}
+          </div>
 
           {error && (
             <p role="alert" className="text-sm text-red-600">
@@ -78,8 +86,9 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
+            className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
           >
+            {submitting && <Spinner />}
             {submitting ? 'Creating account…' : 'Create account'}
           </button>
         </form>

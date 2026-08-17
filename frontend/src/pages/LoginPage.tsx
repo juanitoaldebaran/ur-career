@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { ApiError } from '../lib/api'
 import PasswordField from '../components/PasswordField'
+import Spinner from '../components/Spinner'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -62,8 +63,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="mt-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
+            className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
           >
+            {submitting && <Spinner />}
             {submitting ? 'Logging in…' : 'Log in'}
           </button>
         </form>
