@@ -31,9 +31,9 @@ func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 	}
 }
 
-func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userId string) (*Profile, error) {
+func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userId uuid.UUIDs) (*Profile, error) {
 	const query = `
-	SELECT id, current_role, target_role 
+	SELECT id, current_role, target_role, updated_at
 	FROM profile
 	WHERE user_id = $1
 	`
