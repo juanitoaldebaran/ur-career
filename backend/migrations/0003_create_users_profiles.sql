@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS profile (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS profiles (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     current_role TEXT,
     target_role TEXT,
     constraints JSONB NOT NULL DEFAULT '{}',
