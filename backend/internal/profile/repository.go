@@ -32,6 +32,12 @@ type PgxRepository struct {
 	db *pgxpool.Pool
 }
 
+type Repository interface {
+	GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*Profile, error)
+	ListSkills(ctx context.Context, profileID uuid.UUID) ([]Skills, error)
+	UpsertProfile(ctx context.Context, userID uuid.UUID, currentRole, targetRole string, constraints []byte) (*Profile, error)
+}
+
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 	return &PgxRepository{
 		db: db,
