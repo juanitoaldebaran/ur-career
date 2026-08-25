@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -259,4 +261,14 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 
 func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, map[string]string{"error": message})
+}
+
+func UserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+	claims, ok := ctx.Value(claimsContextKey).(*Claims)
+	if !ok {
+		return uuid.Nil, false
+	}
+
+	id, err := uuid.Parse(claims.UserID)
+	return id, err == nil
 }
