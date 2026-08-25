@@ -10,11 +10,16 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ErrCurrentRoleIsReq = errors.New("current role is required")
+	ErrTargetRoleIsReq  = errors.New("target role is required")
+)
+
 type Service struct {
-	repo *PgxRepository
+	repo Repository
 }
 
-func NewService(repo *PgxRepository) *Service {
+func NewService(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
@@ -22,11 +27,11 @@ func NewService(repo *PgxRepository) *Service {
 
 func (s *Service) UpdateProfile(ctx context.Context, userID uuid.UUID, currentRole, targetRole string, contraints map[string]any) (*Profile, error) {
 	if strings.TrimSpace(currentRole) == "" {
-		return nil, errors.New("current role is required")
+		return nil, ErrCurrentRoleIsReq
 	}
 
 	if strings.TrimSpace(targetRole) == "" {
-		return nil, errors.New("target role is required")
+		return nil, ErrTargetRoleIsReq
 	}
 
 	constraintsJSON, err := json.Marshal(contraints)
@@ -35,4 +40,8 @@ func (s *Service) UpdateProfile(ctx context.Context, userID uuid.UUID, currentRo
 	}
 
 	return s.repo.UpsertProfile(ctx, userID, currentRole, targetRole, constraintsJSON)
+}
+
+func (s *Service) GetProfile(ctx context.Context, userID uuid.UUID) (*Profile, error) {
+	return s.repo.GetProfileByUserID(ctx, userID)
 }
