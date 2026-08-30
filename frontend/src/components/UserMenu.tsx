@@ -23,7 +23,7 @@ export default function UserMenu() {
   const initial = user.email.charAt(0).toUpperCase()
 
   return (
-    <div ref={menuRef} className="absolute right-4 top-4">
+    <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen((value) => !value)}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white transition hover:bg-slate-800 cursor-pointer "
