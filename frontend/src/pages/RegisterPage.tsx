@@ -4,6 +4,7 @@ import { useAuth } from '../lib/AuthContext'
 import { ApiError } from '../lib/api'
 import PasswordField from '../components/PasswordField'
 import Spinner from '../components/Spinner'
+import Logo from '../components/Logo'
 
 export default function RegisterPage() {
   const { register } = useAuth()
@@ -39,9 +40,10 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+      <Logo />
+      <div className="glow-border w-full max-w-sm rounded-xl border-2 bg-white p-8 shadow-sm">
         <h1 className="text-xl font-semibold text-slate-900">Create an account</h1>
-
+       <p className="mt-1 text-sm text-slate-900">Register an account to onboard your journey</p>
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm text-slate-700">
             Email

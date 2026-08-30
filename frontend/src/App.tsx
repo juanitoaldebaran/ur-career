@@ -2,7 +2,6 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AppLayout from './components/AppLayout'
-import Logo from './components/Logo'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
@@ -14,7 +13,6 @@ import PracticePage from './pages/PracticePage'
 function App() {
   return (
     <AuthProvider>
-      <Logo />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
