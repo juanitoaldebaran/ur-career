@@ -15,6 +15,31 @@ type Handler struct {
 	service *Service
 }
 
+type RegisterResponse struct {
+	Id        string    `json:"id"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func NewHandler(service *Service) *Handler {
 	return &Handler{
 		service: service,
@@ -57,31 +82,6 @@ func (h *Handler) Authenticate(next http.Handler) http.Handler {
 type RegisterRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-type RegisterResponse struct {
-	Id        string    `json:"id"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-type LogoutRequest struct {
-	RefreshToken string `json:"refresh_token"`
-}
-
-type RefreshResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
 }
 
 func (r RegisterRequest) validate() error {
