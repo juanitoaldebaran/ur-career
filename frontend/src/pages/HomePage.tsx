@@ -10,7 +10,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-svh items-center justify-center px-4">
-      <h1 className="text-4xl font-semibold text-slate-900">
+      <h1 className="text-center text-2xl font-semibold text-slate-900 sm:text-4xl">
         <TypingWord text={fullText} highlightFrom={GREETING_PREFIX.length} />
       </h1>
     </div>
