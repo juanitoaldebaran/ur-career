@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -41,9 +43,22 @@ func main() {
 
 	log.Printf("listening on :%s", port)
 	log.Println("Server has been started successfully")
-	if err := http.ListenAndServe(":"+port, corsEnable(mux)); err != nil {
-		log.Fatal(err)
+
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: corsEnable(mux),
 	}
+
+	go func() {
+		log.Printf("Listening on: %s", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("server error: %v", err)
+		}
+	}()
+
+	stopCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	<-stopCtx.Done()
 }
 
 func loadEnvironment() (databaseUrl, jwtSecretKey, portValue string) {

@@ -49,6 +49,13 @@ export interface TokenPair {
   refresh_token: string
 }
 
+export interface Profile {
+  user_id: string
+  current_role: string
+  target_role: string
+  updated_at: string
+}
+
 export function register(email: string, password: string): Promise<RegisteredUser> {
   return request('/auth/register', {
     method: 'POST',
@@ -80,5 +87,11 @@ export function logout(refreshToken: string): Promise<void> {
 export function me(accessToken: string): Promise<AuthUser> {
   return request('/auth/me', {
     headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
+export function getProfile(accessToken: string): Promise<Profile> {
+  return request('/profile', {
+    headers: { Authorization: `Bearer ${accessToken}`},
   })
 }
