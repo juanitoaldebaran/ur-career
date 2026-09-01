@@ -4,7 +4,6 @@ import { useAuth } from '../lib/AuthContext'
 import { ApiError } from '../lib/api'
 import PasswordField from '../components/PasswordField'
 import Spinner from '../components/Spinner'
-import Logo from '../components/Logo'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -30,7 +29,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-slate-50 px-4">
-      <Logo />
       <div className="glow-border w-full max-w-sm rounded-xl border-2 bg-white p-8 shadow-sm">
         <h1 className="text-xl font-semibold text-slate-900">Log in</h1>
         <p className="mt-1 text-sm text-slate-900">Welcome back, log in to continue your journey</p>

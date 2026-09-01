@@ -1,11 +1,6 @@
 import { Outlet } from 'react-router-dom'
-import Navbar from './Navbar'
+import type { ReactNode } from 'react'
 
-export default function AppLayout() {
-  return (
-    <div className="min-h-svh bg-white pt-24">
-      <Navbar />
-      <Outlet />
-    </div>
-  )
+export default function AppLayout({ children }: { children?: ReactNode }) {
+  return <div className="min-h-svh bg-white pt-24">{children ?? <Outlet />}</div>
 }
