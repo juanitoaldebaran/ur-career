@@ -40,6 +40,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
+	mux.HandleFunc("GET /health", healthCheckHandler(pool))
 
 	log.Printf("listening on :%s", port)
 	log.Println("Server has been started successfully")
@@ -60,7 +61,7 @@ func main() {
 	defer stop()
 	<-stopCtx.Done()
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
@@ -101,4 +102,14 @@ func corsEnable(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func healthCheckHandler(pool *pgxpool.Pool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := pool.Ping(r.Context()); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
 }
