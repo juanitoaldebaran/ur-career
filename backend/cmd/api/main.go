@@ -59,6 +59,13 @@ func main() {
 	stopCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	<-stopCtx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("shutdown error: %v", err)
+	}
 }
 
 func loadEnvironment() (databaseUrl, jwtSecretKey, portValue string) {
