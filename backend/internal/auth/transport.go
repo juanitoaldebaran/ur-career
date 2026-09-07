@@ -46,11 +46,11 @@ func NewHandler(service *Service) *Handler {
 	}
 }
 
-func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /auth/register", h.Register)
-	mux.HandleFunc("POST /auth/login", h.Login)
+func (h *Handler) RegisterRoutes(mux *http.ServeMux, ratelimit func(http.Handler) http.Handler) {
+	mux.Handle("POST /auth/register", ratelimit(http.HandlerFunc(h.Register)))
+	mux.Handle("POST /auth/login", ratelimit(http.HandlerFunc(h.Login)))
 	mux.HandleFunc("POST /auth/logout", h.Logout)
-	mux.HandleFunc("POST /auth/refresh", h.Refresh)
+	mux.Handle("POST /auth/refresh", ratelimit(http.HandlerFunc(h.Refresh)))
 	mux.Handle("GET /auth/me", h.Authenticate(http.HandlerFunc(h.Me)))
 }
 

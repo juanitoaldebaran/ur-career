@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/ratelimit"
 )
 
 func main() {
@@ -39,7 +40,8 @@ func main() {
 	handler := auth.NewHandler(service)
 
 	mux := http.NewServeMux()
-	handler.RegisterRoutes(mux)
+	limiter := ratelimit.New(5, time.Minute)
+	handler.RegisterRoutes(mux, limiter.Limit)
 	mux.HandleFunc("GET /health", healthCheckHandler(pool))
 
 	log.Printf("listening on :%s", port)
