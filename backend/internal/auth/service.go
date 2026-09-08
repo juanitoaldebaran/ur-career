@@ -137,7 +137,7 @@ func (s *Service) Logout(ctx context.Context, tokenHash string) error {
 func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (string, string, error) {
 	tokenHash := hashToken(rawRefreshToken)
 
-	refreshToken, err := s.repo.GetRefreshToken(ctx, tokenHash)
+	refreshToken, err := s.repo.ClaimRefreshToken(ctx, tokenHash)
 	if err != nil {
 		if errors.Is(err, ErrRefreshTokenNotFound) {
 			return "", "", ErrInvalidToken
