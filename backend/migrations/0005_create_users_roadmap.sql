@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS roadmap (
     status TEXT NOT NULL DEFAULT 'pending',
     position INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now()
-)
+);
