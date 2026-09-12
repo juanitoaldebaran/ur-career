@@ -24,8 +24,8 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed left-1/2 top-4 z-20 flex w-[calc(100%-2rem)] max-w-fit -translate-x-1/2 items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm sm:gap-8 sm:px-6">
-        <Link to="/" className="text-lg font-semibold tracking-tight">
+      <header className="fixed left-1/2 top-4 z-20 flex w-[calc(100%-2rem)] max-w-fit -translate-x-1/2 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2 shadow-sm sm:gap-8 sm:px-6">
+        <Link to="/" className="text-lg font-bold tracking-tight">
           <span className="text-blue-600">ur</span>
           <span className="text-black">-career</span>
         </Link>
@@ -44,7 +44,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/login"
-              className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-slate-800"
             >
               Sign in
             </Link>
@@ -53,7 +53,7 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen((value) => !value)}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 md:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 md:hidden"
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
         >
