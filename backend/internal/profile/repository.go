@@ -17,7 +17,7 @@ var (
 
 type Profile struct {
 	UserID      uuid.UUID `json:"user_id"`
-	CurrentRole string    `json:"current_role"`
+	CurrentRole string    `json:"current_job_role"`
 	TargetRole  string    `json:"target_role"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -46,7 +46,7 @@ func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 
 func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*Profile, error) {
 	const query = `
-	SELECT user_id, current_role, target_role, updated_at
+	SELECT user_id, current_job_role, target_role, updated_at
 	FROM profiles
 	WHERE user_id = $1
 	`
@@ -102,11 +102,11 @@ func (r *PgxRepository) UpsertProfile(ctx context.Context, userID uuid.UUID, cur
 	INSERT INTO profiles (user_id, current_role, target_role, constraints)
 	VALUES ($1, $2, $3, $4)
 	ON CONFLICT (user_id) DO UPDATE
-	SET current_role = EXCLUDED.current_role,
+	SET current_job_role = EXCLUDED.current_job_role,
 	    target_role = EXCLUDED.target_role,
 	    constraints = EXCLUDED.constraints,
 	    updated_at = now()
-	RETURNING user_id, current_role, target_role, updated_at
+	RETURNING user_id, current_job_role, target_role, updated_at
 	`
 
 	var profile Profile
