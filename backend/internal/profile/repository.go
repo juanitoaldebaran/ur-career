@@ -99,7 +99,7 @@ func (r *PgxRepository) ListSkills(ctx context.Context, profileID uuid.UUID) ([]
 
 func (r *PgxRepository) UpsertProfile(ctx context.Context, userID uuid.UUID, currentRole, targetRole string, constraints []byte) (*Profile, error) {
 	const query = `
-	INSERT INTO profiles (user_id, current_job_role, target_role, constraints)
+	INSERT INTO profiles (user_id, current_role, target_role, constraints)
 	VALUES ($1, $2, $3, $4)
 	ON CONFLICT (user_id) DO UPDATE
 	SET current_role = EXCLUDED.current_role,
