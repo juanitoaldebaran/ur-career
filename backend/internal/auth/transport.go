@@ -40,6 +40,11 @@ type RefreshResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type RegisterRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func NewHandler(service *Service) *Handler {
 	return &Handler{
 		service: service,
@@ -77,11 +82,6 @@ func (h *Handler) Authenticate(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), claimsContextKey, claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-type RegisterRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
 }
 
 func (r RegisterRequest) validate() error {
