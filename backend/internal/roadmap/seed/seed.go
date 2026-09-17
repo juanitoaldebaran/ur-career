@@ -2,6 +2,7 @@ package seed
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -118,6 +119,34 @@ var roadmaps = []roadmapSpec{
 	},
 }
 
+func (r *PgxRepository) Run(ctx context.Context) error {
+	for _, spec := range roadmaps {
+		roadmapID, err := r.upsertRoadmap(ctx, spec.Slug, spec.Title)
+		if err != nil {
+			return err
+		}
+
+		existing, err := r.countNodes(ctx, roadmapID)
+		if err != nil {
+			return err
+		}
+		if existing > 0 {
+			log.Printf("roadmap %q already has %d nodes, skipping", spec.Slug, existing)
+			continue
+		}
+
+		for i, section := range spec.Sections {
+			if err := r.insertTree(ctx, roadmapID, nil, section, i+1); err != nil {
+				return err
+			}
+		}
+
+		log.Printf("seeded roadmap %q", spec.Slug)
+	}
+
+	return nil
+}
+
 func (r *PgxRepository) upsertRoadmap(ctx context.Context, slug, title string) (uuid.UUID, error) {
 	const query = `
 	INSERT INTO roadmaps (slug, title)
@@ -161,9 +190,6 @@ func (r *PgxRepository) createNodes(ctx context.Context, roadmapID uuid.UUID, pa
 	return id, nil
 }
 
-// insertTree inserts spec as a node under parentID (nil for a root node),
-// then recurses into each child, using the node it just created as that
-// child's parent.
 func (r *PgxRepository) insertTree(ctx context.Context, roadmapID uuid.UUID, parentID *uuid.UUID, spec nodeSpec, position int) error {
 	id, err := r.createNodes(ctx, roadmapID, parentID, spec.Title, position)
 	if err != nil {
