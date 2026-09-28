@@ -14,9 +14,21 @@ import (
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/ratelimit"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap/seed"
 )
 
+type PgxRepository struct {
+	db *pgxpool.Pool
+}
+
+func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
+	return &PgxRepository{
+		db: db,
+	}
+}
+
 func main() {
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, relying on system environment variables")
 	}
@@ -50,6 +62,12 @@ func main() {
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: corsEnable(mux),
+	}
+
+	if len(os.Args) > 0 && os.Args[1] == "seed" {
+		if err := seed.NewPgxRepository(pool).Run(ctx); err != nil {
+
+		}
 	}
 
 	go func() {
