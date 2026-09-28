@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type nodeSpec struct {
@@ -16,6 +17,15 @@ type roadmapSpec struct {
 	Slug     string
 	Title    string
 	Sections []nodeSpec
+}
+type PgxRepository struct {
+	db *pgxpool.Pool
+}
+
+func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
+	return &PgxRepository{
+		db: db,
+	}
 }
 
 var roadmaps = []roadmapSpec{
