@@ -1,11 +1,12 @@
 package ratelimit
 
 import (
-	"encoding/json"
 	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/juanitoaldebaran/ur-career-backend/internal/httpx"
 )
 
 type visitor struct {
@@ -55,20 +56,10 @@ func (l *Limiter) Limit(next http.Handler) http.Handler {
 		}
 
 		if !l.Allow(ip) {
-			writeError(w, http.StatusTooManyRequests, "too many request, try again later")
+			httpx.WriteError(w, http.StatusTooManyRequests, "too many request, try again later")
 			return
 		}
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-func writeJSON(w http.ResponseWriter, statusCode int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(v)
-}
-
-func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, map[string]string{"error": message})
 }
