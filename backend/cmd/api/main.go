@@ -17,16 +17,6 @@ import (
 	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap/seed"
 )
 
-type PgxRepository struct {
-	db *pgxpool.Pool
-}
-
-func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
-	return &PgxRepository{
-		db: db,
-	}
-}
-
 func main() {
 
 	if err := godotenv.Load(); err != nil {
@@ -64,10 +54,11 @@ func main() {
 		Handler: corsEnable(mux),
 	}
 
-	if len(os.Args) > 0 && os.Args[1] == "seed" {
+	if len(os.Args) > 1 && os.Args[1] == "seed" {
 		if err := seed.NewPgxRepository(pool).Run(ctx); err != nil {
-
+			log.Fatalf("seed: %v", err)
 		}
+		return
 	}
 
 	go func() {

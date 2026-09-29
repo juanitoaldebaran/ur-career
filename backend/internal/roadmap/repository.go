@@ -31,6 +31,13 @@ type PgxRepository struct {
 	db *pgxpool.Pool
 }
 
+type Repository interface {
+	GetRoadmapBySlug(ctx context.Context, slug string) (*Roadmap, error)
+	ListNodes(ctx context.Context, roadmapID uuid.UUID) ([]Node, error)
+	GetUserProgress(ctx context.Context, userID, roadmapID uuid.UUID) (map[uuid.UUID]string, error)
+	UpsertProgress(ctx context.Context, userID, roadmapID uuid.UUID, status string) error
+}
+
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 	return &PgxRepository{
 		db: db,
@@ -89,9 +96,6 @@ func (r *PgxRepository) ListNodes(ctx context.Context, roadmapID uuid.UUID) ([]N
 	return nodes, nil
 }
 
-// GetUserProgress returns node_id -> status for every progress row userID
-// has within roadmapID. Nodes with no row here simply aren't in the map --
-// the caller treats a missing entry as "pending".
 func (r *PgxRepository) GetUserProgress(ctx context.Context, userID, roadmapID uuid.UUID) (map[uuid.UUID]string, error) {
 	const query = `
 	SELECT p.node_id, p.status
