@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/juanitoaldebaran/ur-career-backend/internal/httpx"
 )
 
 type Handler struct {
@@ -68,14 +70,14 @@ func (h *Handler) Authenticate(next http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 		const prefix = "Bearer "
 		if !strings.HasPrefix(authHeader, prefix) {
-			writeError(w, http.StatusUnauthorized, "missing or invalid authorization")
+			httpx.WriteError(w, http.StatusUnauthorized, "missing or invalid authorization")
 			return
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, prefix)
 		claims, err := h.service.ParseToken(tokenString)
 		if err != nil {
-			writeError(w, http.StatusUnauthorized, "invalid or expired token")
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid or expired token")
 			return
 		}
 
@@ -125,12 +127,12 @@ func (r RefreshRequest) validateRefresh() error {
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var registerRequest RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&registerRequest); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := registerRequest.validate(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -138,14 +140,14 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserHasAlreadyExisted):
-			writeError(w, http.StatusConflict, err.Error())
+			httpx.WriteError(w, http.StatusConflict, err.Error())
 		default:
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, RegisterResponse{
+	httpx.WriteJSON(w, http.StatusCreated, RegisterResponse{
 		Id:        users.Id.String(),
 		Email:     users.Email,
 		CreatedAt: users.CreatedAt,
@@ -155,12 +157,12 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginRequest LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := loginRequest.validateLogin(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -168,13 +170,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrUserNotFound):
-			writeError(w, http.StatusUnauthorized, "invalid credentials")
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid credentials")
 		default:
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
 	}
-	writeJSON(
+	httpx.WriteJSON(
 		w,
 		http.StatusOK,
 		LoginResponse{
@@ -187,18 +189,18 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	var logOut LogoutRequest
 	if err := json.NewDecoder(r.Body).Decode(&logOut); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := logOut.validateLogout(); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.service.Logout(r.Context(), logOut.RefreshToken); err != nil {
 		if !errors.Is(err, ErrRefreshTokenNotFound) {
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 			return
 		}
 	}
@@ -209,12 +211,12 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 	var refreshRequest RefreshRequest
 	if err := json.NewDecoder(r.Body).Decode(&refreshRequest); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	if err := refreshRequest.validateRefresh(); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid refresh request")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid refresh request")
 		return
 	}
 
@@ -222,14 +224,14 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidToken), errors.Is(err, ErrUserNotFound):
-			writeError(w, http.StatusUnauthorized, "invalid or expired refresh token")
+			httpx.WriteError(w, http.StatusUnauthorized, "invalid or expired refresh token")
 		default:
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, RefreshResponse{
+	httpx.WriteJSON(w, http.StatusOK, RefreshResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})
@@ -243,24 +245,14 @@ type MeResponse struct {
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value(claimsContextKey).(*Claims)
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "unauthorized")
+		httpx.WriteError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
-	writeJSON(w, http.StatusOK, MeResponse{
+	httpx.WriteJSON(w, http.StatusOK, MeResponse{
 		UserID: claims.UserID,
 		Email:  claims.Email,
 	})
-}
-
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
-}
-
-func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, map[string]string{"error": message})
 }
 
 func UserIDFromContext(ctx context.Context) (uuid.UUID, bool) {

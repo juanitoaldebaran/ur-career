@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/httpx"
 )
 
 type Handler struct {
@@ -40,21 +41,21 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authenticate func(http.Hand
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID, ok := auth.UserIDFromContext(r.Context())
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "unauthorized")
+		httpx.WriteError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
 	profile, err := h.service.GetProfile(r.Context(), userID)
 	if err != nil {
 		if errors.Is(err, ErrProfileNotFound) {
-			writeError(w, http.StatusNotFound, "profile not found")
+			httpx.WriteError(w, http.StatusNotFound, "profile not found")
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "internal server error")
+		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	writeJSON(w, http.StatusOK, ProfileResponse{
+	httpx.WriteJSON(w, http.StatusOK, ProfileResponse{
 		UserID:      profile.UserID.String(),
 		CurrentRole: profile.CurrentRole,
 		TargetRole:  profile.TargetRole,
@@ -65,13 +66,13 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	userID, ok := auth.UserIDFromContext(r.Context())
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "unauthorized")
+		httpx.WriteError(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
 	var updateProfileReq UpdateProfileResquest
 	if err := json.NewDecoder(r.Body).Decode(&updateProfileReq); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
+		httpx.WriteError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
@@ -79,27 +80,17 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrCurrentRoleIsReq), errors.Is(err, ErrTargetRoleIsReq):
-			writeError(w, http.StatusBadRequest, err.Error())
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		default:
-			writeError(w, http.StatusInternalServerError, "internal server error")
+			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		}
 		return
 	}
 
-	writeJSON(w, http.StatusOK, ProfileResponse{
+	httpx.WriteJSON(w, http.StatusOK, ProfileResponse{
 		UserID:      profile.UserID.String(),
 		CurrentRole: profile.CurrentRole,
 		TargetRole:  profile.TargetRole,
 		UpdatedAt:   profile.UpdatedAt,
 	})
-}
-
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
-}
-
-func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, map[string]string{"error": message})
 }
