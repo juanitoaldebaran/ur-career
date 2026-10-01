@@ -13,7 +13,9 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/profile"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/ratelimit"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap/seed"
 )
 
@@ -45,6 +47,16 @@ func main() {
 	limiter := ratelimit.New(5, time.Minute)
 	handler.RegisterRoutes(mux, limiter.Limit)
 	mux.HandleFunc("GET /health", healthCheckHandler(pool))
+
+	roadmapRepo := roadmap.NewPgxRepository(pool)
+	roadmapService := roadmap.NewService(roadmapRepo)
+	roadmapHandler := roadmap.NewHandler(roadmapService)
+	roadmapHandler.RegisterRoutes(mux, handler.Authenticate)
+
+	profileRepo := profile.NewPgxRepository(pool)
+	profileService := profile.NewService(profileRepo)
+	profileHandler := profile.NewHandler(profileService)
+	profileHandler.RegisterRoutes(mux, handler.Authenticate)
 
 	log.Printf("listening on :%s", port)
 	log.Println("Server has been started successfully")
