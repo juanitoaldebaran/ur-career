@@ -3,6 +3,7 @@ import * as api from './api'
 
 interface AuthContextValue {
   user: api.AuthUser | null
+  accessToken: string | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
@@ -16,17 +17,21 @@ const REFRESH_KEY = 'ur_career_refresh_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<api.AuthUser | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const accessToken = localStorage.getItem(ACCESS_KEY)
-    if (!accessToken) {
+    const storedToken = localStorage.getItem(ACCESS_KEY)
+    if (!storedToken) {
       setLoading(false)
       return
     }
     api
-      .me(accessToken)
-      .then(setUser)
+      .me(storedToken)
+      .then((u) => {
+        setUser(u)
+        setAccessToken(storedToken)
+      })
       .catch(() => {
         localStorage.removeItem(ACCESS_KEY)
         localStorage.removeItem(REFRESH_KEY)
@@ -38,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens = await api.login(email, password)
     localStorage.setItem(ACCESS_KEY, tokens.access_token)
     localStorage.setItem(REFRESH_KEY, tokens.refresh_token)
+    setAccessToken(tokens.access_token)
     setUser(await api.me(tokens.access_token))
   }
 
@@ -51,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(ACCESS_KEY)
     localStorage.removeItem(REFRESH_KEY)
     setUser(null)
+    setAccessToken(null)
     if (refreshToken) {
       await api.logout(refreshToken).catch(() => {
         // already signed out client-side; a failed revoke server-side isn't worth surfacing
@@ -62,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        accessToken,
         loading,
         login: handleLogin,
         register: handleRegister,

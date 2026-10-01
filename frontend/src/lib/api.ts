@@ -56,6 +56,21 @@ export interface Profile {
   updated_at: string
 }
 
+export interface RoadmapSummary {
+  id: string
+  slug: string
+  title: string
+  node_count: number
+}
+
+export interface RoadmapNode {
+  id: string
+  parent_id: string | null
+  title: string
+  position: number
+  status: string
+}
+
 export function register(email: string, password: string): Promise<RegisteredUser> {
   return request('/auth/register', {
     method: 'POST',
@@ -93,5 +108,29 @@ export function me(accessToken: string): Promise<AuthUser> {
 export function getProfile(accessToken: string): Promise<Profile> {
   return request('/profile', {
     headers: { Authorization: `Bearer ${accessToken}`},
+  })
+}
+
+export function listRoadmaps(accessToken: string): Promise<RoadmapSummary[]> {
+  return request('/roadmaps', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
+export function getRoadmap(slug: string, accessToken: string): Promise<RoadmapNode[]> {
+  return request(`/roadmap/${slug}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
+export function updateNodeStatus(
+  nodeId: string,
+  status: string,
+  accessToken: string,
+): Promise<void> {
+  return request(`/roadmap/nodes/${nodeId}/progress`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ status }),
   })
 }
