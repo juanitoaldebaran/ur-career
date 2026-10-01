@@ -8,7 +8,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ConsultationPage from './pages/ConsultationPage'
 import CvBuilderPage from './pages/CvBuilderPage'
-import RoadmapPage from './pages/RoadmapPage'
+import RoadmapsPage from './pages/RoadmapsPage'
+import RoadmapDetailPage from './pages/RoadmapDetailPage'
 import PracticePage from './pages/PracticePage'
 
 function App() {
@@ -28,7 +29,8 @@ function App() {
         >
           <Route path="/consultation" element={<ConsultationPage />} />
           <Route path="/cv-builder" element={<CvBuilderPage />} />
-          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/roadmap" element={<RoadmapsPage />} />
+          <Route path="/roadmap/:slug" element={<RoadmapDetailPage />} />
           <Route path="/practice" element={<PracticePage />} />
         </Route>
       </Routes>
