@@ -21,6 +21,10 @@ func NewService(repo Repository) *Service {
 	}
 }
 
+func (s *Service) ListRoadmaps(ctx context.Context) ([]RoadmapSummary, error) {
+	return s.repo.ListRoadmaps(ctx)
+}
+
 func (s *Service) GetNodes(ctx context.Context, userID uuid.UUID, slug string) ([]Node, error) {
 	roadmap, err := s.repo.GetRoadmapBySlug(ctx, slug)
 	if err != nil {

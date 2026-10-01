@@ -3,6 +3,7 @@ package roadmap
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -33,8 +34,19 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(mux *http.ServeMux, authenticate func(http.Handler) http.Handler) {
+	mux.Handle("GET /roadmaps", authenticate(http.HandlerFunc(h.ListRoadmaps)))
 	mux.Handle("GET /roadmap/{slug}", authenticate(http.HandlerFunc(h.GetNodes)))
 	mux.Handle("PATCH /roadmap/nodes/{id}/progress", authenticate(http.HandlerFunc(h.UpdateStatus)))
+}
+
+func (h *Handler) ListRoadmaps(w http.ResponseWriter, r *http.Request) {
+	roadmaps, err := h.service.ListRoadmaps(r.Context())
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, roadmaps)
 }
 
 func (h *Handler) GetNodes(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +63,7 @@ func (h *Handler) GetNodes(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, http.StatusNotFound, "roadmap not found")
 			return
 		}
+		log.Printf("roadmap: GetNodes(%q): %v", slug, err)
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}

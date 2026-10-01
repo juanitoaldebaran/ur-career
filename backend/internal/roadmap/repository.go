@@ -31,7 +31,15 @@ type PgxRepository struct {
 	db *pgxpool.Pool
 }
 
+type RoadmapSummary struct {
+	ID        uuid.UUID `json:"id"`
+	Slug      string    `json:"slug"`
+	Title     string    `json:"title"`
+	NodeCount int       `json:"node_count"`
+}
+
 type Repository interface {
+	ListRoadmaps(ctx context.Context) ([]RoadmapSummary, error)
 	GetRoadmapBySlug(ctx context.Context, slug string) (*Roadmap, error)
 	ListNodes(ctx context.Context, roadmapID uuid.UUID) ([]Node, error)
 	GetUserProgress(ctx context.Context, userID, roadmapID uuid.UUID) (map[uuid.UUID]string, error)
@@ -42,6 +50,36 @@ func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 	return &PgxRepository{
 		db: db,
 	}
+}
+
+func (r *PgxRepository) ListRoadmaps(ctx context.Context) ([]RoadmapSummary, error) {
+	const query = `
+	SELECT r.id, r.slug, r.title, COUNT(n.id)
+	FROM roadmaps r
+	LEFT JOIN roadmap_nodes n ON n.roadmap_id = r.id
+	GROUP BY r.id, r.slug, r.title
+	ORDER BY r.title
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	roadmaps := make([]RoadmapSummary, 0)
+	for rows.Next() {
+		var summary RoadmapSummary
+		if err := rows.Scan(&summary.ID, &summary.Slug, &summary.Title, &summary.NodeCount); err != nil {
+			return nil, err
+		}
+		roadmaps = append(roadmaps, summary)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return roadmaps, nil
 }
 
 func (r *PgxRepository) GetRoadmapBySlug(ctx context.Context, slug string) (*Roadmap, error) {
@@ -98,7 +136,7 @@ func (r *PgxRepository) ListNodes(ctx context.Context, roadmapID uuid.UUID) ([]N
 
 func (r *PgxRepository) GetUserProgress(ctx context.Context, userID, roadmapID uuid.UUID) (map[uuid.UUID]string, error) {
 	const query = `
-	SELECT p.node_id, p.status
+	SELECT p.node_id, p.status_roadmap
 	FROM user_roadmap_progress p
 	JOIN roadmap_nodes n ON n.id = p.node_id
 	WHERE p.user_id = $1 AND n.roadmap_id = $2
@@ -128,10 +166,10 @@ func (r *PgxRepository) GetUserProgress(ctx context.Context, userID, roadmapID u
 
 func (r *PgxRepository) UpsertProgress(ctx context.Context, userID, nodeID uuid.UUID, status string) error {
 	const query = `
-	INSERT INTO user_roadmap_progress (user_id, node_id, status)
+	INSERT INTO user_roadmap_progress (user_id, node_id, status_roadmap)
 	VALUES ($1, $2, $3)
 	ON CONFLICT (user_id, node_id) DO UPDATE
-	SET status = EXCLUDED.status,
+	SET status_roadmap = EXCLUDED.status_roadmap,
 	    updated_at = now()
 	`
 
