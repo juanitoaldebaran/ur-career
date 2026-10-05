@@ -58,9 +58,6 @@ func main() {
 	profileHandler := profile.NewHandler(profileService)
 	profileHandler.RegisterRoutes(mux, handler.Authenticate)
 
-	log.Printf("listening on :%s", port)
-	log.Println("Server has been started successfully")
-
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: corsEnable(mux),
