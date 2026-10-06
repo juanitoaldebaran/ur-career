@@ -7,6 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,7 +18,11 @@ import (
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidToken       = errors.New("invalid token")
+	ErrInvalidEmail       = errors.New("invalid email address")
+	emailRegex            = regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$`)
 )
+
+const maxEmailLength = 254
 
 type Service struct {
 	repo          Repository
@@ -40,21 +46,26 @@ func NewService(repo Repository, jwtSecret string, tokenExpiry, refreshExpiry ti
 	}
 }
 
-func (s *Service) Register(ctx context.Context, email, password string) (*Users, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("hash password: %v", err)
-	}
-
-	user, err := s.repo.CreateUser(ctx, email, string(hash))
+func (s *Service) Register(ctx context.Context, rawEmail, password string) (*Users, error) {
+	email, err := normalizeEmail(rawEmail)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("hash password: %w", err)
+	}
+
+	return s.repo.CreateUser(ctx, email, string(hash))
 }
 
-func (s *Service) Login(ctx context.Context, email, password string) (string, string, error) {
+func (s *Service) Login(ctx context.Context, rawEmail, password string) (string, string, error) {
+	email, err := normalizeEmail(rawEmail)
+	if err != nil {
+		return "", "", ErrInvalidCredentials
+	}
+
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ErrUserNotFound) {
@@ -87,14 +98,14 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, st
 
 func (s *Service) generateToken(user *Users) (string, error) {
 	now := time.Now()
-	userId := user.Id.String()
+	userID := user.Id.String()
 	claims := Claims{
-		UserID: userId,
+		UserID: userID,
 		Email:  user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.tokenExpiry)),
-			Subject:   user.Id.String(),
+			Subject:   userID,
 		},
 	}
 
@@ -105,11 +116,8 @@ func (s *Service) generateToken(user *Users) (string, error) {
 func (s *Service) ParseToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, ErrInvalidToken
-		}
 		return s.jwtSecret, nil
-	})
+	}, jwt.WithValidMethods([]string{"HS256"}))
 	if err != nil || !token.Valid {
 		return nil, ErrInvalidToken
 	}
@@ -130,8 +138,16 @@ func hashToken(raw string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (s *Service) Logout(ctx context.Context, tokenHash string) error {
-	return s.repo.RevokeRefreshToken(ctx, hashToken(tokenHash))
+func normalizeEmail(raw string) (string, error) {
+	email := strings.ToLower(strings.TrimSpace(raw))
+	if len(email) > maxEmailLength || !emailRegex.MatchString(email) {
+		return "", ErrInvalidEmail
+	}
+	return email, nil
+}
+
+func (s *Service) Logout(ctx context.Context, rawToken string) error {
+	return s.repo.RevokeRefreshToken(ctx, hashToken(rawToken))
 }
 
 func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (string, string, error) {
@@ -145,16 +161,8 @@ func (s *Service) Refresh(ctx context.Context, rawRefreshToken string) (string, 
 		return "", "", err
 	}
 
-	if refreshToken.RevokedAt != nil || time.Now().After(refreshToken.ExpiresAt) {
-		return "", "", ErrInvalidToken
-	}
-
 	user, err := s.repo.GetUserByID(ctx, refreshToken.UserID)
 	if err != nil {
-		return "", "", err
-	}
-
-	if err := s.repo.RevokeRefreshToken(ctx, tokenHash); err != nil {
 		return "", "", err
 	}
 

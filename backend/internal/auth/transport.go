@@ -139,6 +139,8 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	users, err := h.service.Register(r.Context(), registerRequest.Email, registerRequest.Password)
 	if err != nil {
 		switch {
+		case errors.Is(err, ErrInvalidEmail):
+			httpx.WriteError(w, http.StatusBadRequest, "a valid email is required")
 		case errors.Is(err, ErrUserHasAlreadyExisted):
 			httpx.WriteError(w, http.StatusConflict, err.Error())
 		default:
