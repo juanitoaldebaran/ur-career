@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/cache"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/profile"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/ratelimit"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap"
@@ -48,7 +49,21 @@ func main() {
 	handler.RegisterRoutes(mux, limiter.Limit)
 	mux.HandleFunc("GET /health", healthCheckHandler(pool))
 
-	roadmapRepo := roadmap.NewPgxRepository(pool)
+	var redisCache cache.Cache
+	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
+		rc, err := cache.NewRedis(ctx, redisURL)
+		if err != nil {
+			log.Printf("redis unavailable, running without cache: %v", err)
+		} else {
+			defer rc.Close()
+			redisCache = rc
+		}
+	}
+
+	var roadmapRepo roadmap.Repository = roadmap.NewPgxRepository(pool)
+	if redisCache != nil {
+		roadmapRepo = roadmap.NewCachedRepository(roadmapRepo, redisCache)
+	}
 	roadmapService := roadmap.NewService(roadmapRepo)
 	roadmapHandler := roadmap.NewHandler(roadmapService)
 	roadmapHandler.RegisterRoutes(mux, handler.Authenticate)
