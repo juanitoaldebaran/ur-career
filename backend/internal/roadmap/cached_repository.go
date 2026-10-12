@@ -20,25 +20,24 @@ type CachedRepository struct {
 func NewCachedRepository(repo Repository, c cache.Cache) *CachedRepository {
 	return &CachedRepository{
 		Repository: repo,
-		cache: c,
+		cache:      c,
 	}
 }
 
 func (r *CachedRepository) ListRoadmaps(ctx context.Context) ([]RoadmapSummary, error) {
-	  return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix) + "list", cacheTTL, func() ([]RoadmapSummary, error) {
+	return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix)+"list", cacheTTL, func() ([]RoadmapSummary, error) {
 		return r.Repository.ListRoadmaps(ctx)
-	  })
+	})
 }
 
 func (r *CachedRepository) GetRoadmapBySlug(ctx context.Context, slug string) (*Roadmap, error) {
-	return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix) + "slug:" + slug, cacheTTL, func() (*Roadmap, error) {
+	return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix)+"slug:"+slug, cacheTTL, func() (*Roadmap, error) {
 		return r.Repository.GetRoadmapBySlug(ctx, slug)
 	})
 }
 
 func (r *CachedRepository) ListNodes(ctx context.Context, roadmapID uuid.UUID) ([]Node, error) {
-	return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix) + "nodes:" + roadmapID.String(), cacheTTL, func() ([]Node, error) {
+	return cache.Remember(ctx, r.cache, &r.group, string(CachePrefix)+"nodes:"+roadmapID.String(), cacheTTL, func() ([]Node, error) {
 		return r.Repository.ListNodes(ctx, roadmapID)
 	})
 }
-
