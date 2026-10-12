@@ -3,6 +3,82 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 import { listRoadmaps, type RoadmapSummary } from '../lib/api'
+import { ROADMAP_CONTENT, getRoadmapStats } from '../data/roadmapContent'
+
+const EASE = [0.22, 1, 0.36, 1] as const
+const ORDER = Object.keys(ROADMAP_CONTENT)
+const MAX_FRAMEWORKS = 4
+
+function Stat({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <p className="font-display text-2xl font-semibold leading-none">{value}</p>
+      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+    </div>
+  )
+}
+
+function ChipGroup({ label, items, variant, max }: { label: string; items: string[]; variant: string; max?: number }) {
+  const shown = max ? items.slice(0, max) : items
+  return (
+    <div>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {shown.map((item) => (
+          <span key={item} className={`chip ${variant}`}>
+            {item}
+          </span>
+        ))}
+        {max && items.length > max && <span className="chip chip-brand">+{items.length - max}</span>}
+      </div>
+    </div>
+  )
+}
+
+function RoadmapCard({ roadmap, index, instant }: { roadmap: RoadmapSummary; index: number; instant: boolean }) {
+  const content = ROADMAP_CONTENT[roadmap.slug]
+  const stats = getRoadmapStats(roadmap.slug)
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.35, delay: instant ? 0 : index * 0.06, ease: EASE }}
+    >
+      <Link
+        to={`/roadmap/${roadmap.slug}`}
+        className="group flex h-full flex-col rounded-2xl border border-line bg-white p-6 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-ink hover:shadow-[0_18px_40px_-20px_rgba(10,14,26,0.35)]"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-xl font-semibold">{roadmap.title}</h2>
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink transition-all duration-300 group-hover:border-brand group-hover:bg-brand group-hover:text-white"
+            aria-hidden="true"
+          >
+            →
+          </span>
+        </div>
+
+        {content && <p className="mt-2 text-sm leading-relaxed text-slate-500">{content.tagline}</p>}
+
+        <div className="mt-5 flex gap-8 border-y border-line py-4">
+          <Stat value={roadmap.node_count} label="Topics" />
+          <Stat value={stats.resources} label="Resources" />
+          <Stat value={stats.skills} label="Skills" />
+        </div>
+
+        {content && (
+          <div className="mt-4 space-y-3.5">
+            <ChipGroup label="Languages" items={content.languages} variant="chip-ink" />
+            <ChipGroup label="Frameworks" items={content.frameworks} variant="" max={MAX_FRAMEWORKS} />
+          </div>
+        )}
+      </Link>
+    </motion.div>
+  )
+}
 
 export default function RoadmapsPage() {
   const { accessToken } = useAuth()
@@ -11,14 +87,31 @@ export default function RoadmapsPage() {
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const sorted = useMemo(() => {
+    if (!roadmaps) return null
+    const rank = (slug: string) => {
+      const i = ORDER.indexOf(slug)
+      return i === -1 ? ORDER.length : i
+    }
+    return [...roadmaps].sort((a, b) => rank(a.slug) - rank(b.slug))
+  }, [roadmaps])
+
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase()
-    if (!roadmaps || !term) return roadmaps
-    return roadmaps.filter(
-      (roadmap) =>
-        roadmap.title.toLowerCase().includes(term) || roadmap.slug.toLowerCase().includes(term),
-    )
-  }, [roadmaps, query])
+    if (!sorted || !term) return sorted
+    return sorted.filter((roadmap) => {
+      const c = ROADMAP_CONTENT[roadmap.slug]
+      const skills = c ? [...c.skills, ...c.languages, ...c.frameworks, ...c.tools].join(' ') : ''
+      return `${roadmap.title} ${roadmap.slug} ${skills}`.toLowerCase().includes(term)
+    })
+  }, [sorted, query])
+
+  useEffect(() => {
+    if (!accessToken) return
+    listRoadmaps(accessToken)
+      .then(setRoadmaps)
+      .catch(() => setError('Could not load roadmaps.'))
+  }, [accessToken])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -33,20 +126,17 @@ export default function RoadmapsPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  useEffect(() => {
-    if (!accessToken) return
-    listRoadmaps(accessToken)
-      .then(setRoadmaps)
-      .catch(() => setError('Could not load roadmaps.'))
-  }, [accessToken])
-
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8">
-      <p className="text-xs font-medium uppercase tracking-[0.2em] text-blue-600">Roadmaps</p>
-      <h1 className="mt-2 text-3xl font-semibold text-slate-900 sm:text-4xl">Pick a roadmap</h1>
-      <p className="mt-2 max-w-xl text-sm text-slate-500">
-        A structured path of topics to work through, in order. Your progress is saved as you go.
-      </p>
+    <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-8">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+        <p className="eyebrow">Roadmaps</p>
+        <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">
+          Pick a path, <span className="text-brand">learn in order</span>
+        </h1>
+        <p className="mt-2 max-w-xl text-sm text-slate-500">
+          Every roadmap lists the languages and frameworks you will learn, plus a short explanation and hand-picked resources for each topic.
+        </p>
+      </motion.div>
 
       <div className="relative mt-6 max-w-md">
         <svg
@@ -67,9 +157,9 @@ export default function RoadmapsPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === 'Escape' && setQuery('')}
-          placeholder="Search roadmaps…"
+          placeholder="Search roadmaps or skills…"
           aria-label="Search roadmaps"
-          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-16 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-600/10 [&::-webkit-search-cancel-button]:hidden"
+          className="w-full rounded-xl border border-line bg-white py-2.5 pl-10 pr-16 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10 [&::-webkit-search-cancel-button]:hidden"
         />
         <AnimatePresence mode="wait" initial={false}>
           {query ? (
@@ -112,46 +202,16 @@ export default function RoadmapsPage() {
 
       {error && <p className="mt-8 text-sm text-red-600">{error}</p>}
       {!error && !roadmaps && <p className="mt-8 text-sm text-slate-400">Loading…</p>}
-      {roadmaps && roadmaps.length === 0 && (
-        <p className="mt-8 text-sm text-slate-400">No roadmaps yet.</p>
-      )}
-
+      {roadmaps && roadmaps.length === 0 && <p className="mt-8 text-sm text-slate-400">No roadmaps yet.</p>}
       {roadmaps && roadmaps.length > 0 && filtered?.length === 0 && (
-        <p className="mt-8 text-sm text-slate-500">
-          No roadmaps match “{query.trim()}”.
-        </p>
+        <p className="mt-8 text-sm text-slate-500">No roadmaps match “{query.trim()}”.</p>
       )}
 
-      <motion.div layout className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <motion.div layout className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
         <AnimatePresence mode="popLayout">
-        {filtered?.map((roadmap, i) => (
-          <motion.div
-            key={roadmap.id}
-            layout
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, delay: query ? 0 : i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-          >
-          <Link
-            to={`/roadmap/${roadmap.slug}`}
-            className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-          >
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 group-hover:text-blue-600">
-                {roadmap.title}
-              </h2>
-              <p className="mt-1 text-xs text-slate-400">{roadmap.node_count} topics</p>
-            </div>
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white transition group-hover:bg-blue-600"
-              aria-hidden="true"
-            >
-              →
-            </span>
-          </Link>
-          </motion.div>
-        ))}
+          {filtered?.map((roadmap, i) => (
+            <RoadmapCard key={roadmap.id} roadmap={roadmap} index={i} instant={query.trim() !== ''} />
+          ))}
         </AnimatePresence>
       </motion.div>
     </div>

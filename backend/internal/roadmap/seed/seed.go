@@ -118,6 +118,237 @@ var roadmaps = []roadmapSpec{
 			}},
 		},
 	},
+	{
+		Slug:  "frontend-software-engineer",
+		Title: "Frontend Software Engineer",
+		Sections: []nodeSpec{
+			{Title: "Web Fundamentals", Children: []nodeSpec{
+				{Title: "HTML"},
+				{Title: "CSS"},
+				{Title: "Responsive design"},
+				{Title: "Browser DevTools"},
+			}},
+			{Title: "JavaScript", Children: []nodeSpec{
+				{Title: "JavaScript fundamentals"},
+				{Title: "DOM & events"},
+				{Title: "Async JavaScript & fetch"},
+				{Title: "ES modules"},
+			}},
+			{Title: "TypeScript", Children: []nodeSpec{
+				{Title: "TypeScript basics"},
+				{Title: "Type narrowing & generics"},
+			}},
+			{Title: "React", Children: []nodeSpec{
+				{Title: "Components & props"},
+				{Title: "Hooks (useState, useEffect)"},
+				{Title: "Client-side routing"},
+				{Title: "Forms & validation"},
+			}},
+			{Title: "State & Data", Children: []nodeSpec{
+				{Title: "State management"},
+				{Title: "Data fetching & caching"},
+			}},
+			{Title: "Styling & Motion", Children: []nodeSpec{
+				{Title: "Tailwind CSS"},
+				{Title: "Animation (Motion)"},
+			}},
+			{Title: "Testing", Children: []nodeSpec{
+				{Title: "Unit & component testing"},
+				{Title: "End-to-end testing"},
+			}},
+			{Title: "Performance & Accessibility", Children: []nodeSpec{
+				{Title: "Core Web Vitals"},
+				{Title: "Accessibility (a11y)"},
+			}},
+			{Title: "Tooling & Deployment", Children: []nodeSpec{
+				{Title: "Vite & bundlers"},
+				{Title: "Deploying a frontend"},
+			}},
+		},
+	},
+	{
+		Slug:  "ai-engineer",
+		Title: "AI Engineer",
+		Sections: []nodeSpec{
+			{Title: "Foundations", Children: []nodeSpec{
+				{Title: "Python for AI"},
+				{Title: "Math: linear algebra & probability"},
+				{Title: "NumPy & pandas"},
+			}},
+			{Title: "Machine Learning", Children: []nodeSpec{
+				{Title: "Machine learning concepts"},
+				{Title: "scikit-learn"},
+				{Title: "Model evaluation"},
+			}},
+			{Title: "Deep Learning", Children: []nodeSpec{
+				{Title: "Neural networks"},
+				{Title: "PyTorch"},
+				{Title: "Transformers & attention"},
+			}},
+			{Title: "Large Language Models", Children: []nodeSpec{
+				{Title: "Prompt engineering"},
+				{Title: "Working with LLM APIs"},
+				{Title: "Structured outputs & tool use"},
+			}},
+			{Title: "RAG & Vector Search", Children: []nodeSpec{
+				{Title: "Embeddings"},
+				{Title: "Vector databases"},
+				{Title: "RAG pipelines"},
+			}},
+			{Title: "Agents", Children: []nodeSpec{
+				{Title: "Agent patterns"},
+				{Title: "Model Context Protocol (MCP)"},
+			}},
+			{Title: "Evaluation & Safety", Children: []nodeSpec{
+				{Title: "Evals & testing LLM apps"},
+				{Title: "Safety & guardrails"},
+			}},
+			{Title: "Production", Children: []nodeSpec{
+				{Title: "Serving & cost optimization"},
+				{Title: "Observability for LLM apps"},
+			}},
+		},
+	},
+	{
+		Slug:  "full-stack-engineer",
+		Title: "Full Stack Engineer",
+		Sections: []nodeSpec{
+			{Title: "Web Foundations", Children: []nodeSpec{
+				{Title: "HTML & CSS essentials"},
+				{Title: "JavaScript & TypeScript"},
+			}},
+			{Title: "Front End", Children: []nodeSpec{
+				{Title: "React & component architecture"},
+				{Title: "Next.js (full-stack React)"},
+			}},
+			{Title: "Back End", Children: []nodeSpec{
+				{Title: "Node.js & Express"},
+				{Title: "REST & GraphQL APIs"},
+				{Title: "Authentication & sessions"},
+			}},
+			{Title: "Data", Children: []nodeSpec{
+				{Title: "SQL & PostgreSQL"},
+				{Title: "ORMs with Prisma"},
+				{Title: "MongoDB basics"},
+			}},
+			{Title: "Connecting the Stack", Children: []nodeSpec{
+				{Title: "Calling APIs from the front end"},
+				{Title: "Real-time with WebSockets"},
+			}},
+			{Title: "Quality", Children: []nodeSpec{
+				{Title: "Testing full-stack apps"},
+			}},
+			{Title: "Shipping", Children: []nodeSpec{
+				{Title: "Docker for full-stack apps"},
+				{Title: "CI/CD & deployment"},
+			}},
+		},
+	},
+	{
+		Slug:  "devops-engineer",
+		Title: "DevOps Engineer",
+		Sections: []nodeSpec{
+			{Title: "Linux & Scripting", Children: []nodeSpec{
+				{Title: "Linux fundamentals"},
+				{Title: "Shell scripting (Bash)"},
+				{Title: "Networking basics"},
+			}},
+			{Title: "Source Control & CI", Children: []nodeSpec{
+				{Title: "Git branching strategies"},
+				{Title: "CI pipelines (GitHub Actions)"},
+			}},
+			{Title: "Containers & Orchestration", Children: []nodeSpec{
+				{Title: "Docker"},
+				{Title: "Kubernetes"},
+			}},
+			{Title: "Infrastructure as Code", Children: []nodeSpec{
+				{Title: "Terraform"},
+				{Title: "Ansible"},
+			}},
+			{Title: "Cloud", Children: []nodeSpec{
+				{Title: "AWS fundamentals for DevOps"},
+			}},
+			{Title: "Observability", Children: []nodeSpec{
+				{Title: "Metrics with Prometheus & Grafana"},
+				{Title: "Centralized logging"},
+			}},
+			{Title: "Reliability & Security", Children: []nodeSpec{
+				{Title: "SRE principles & SLOs"},
+				{Title: "DevSecOps basics"},
+			}},
+			{Title: "Delivery", Children: []nodeSpec{
+				{Title: "GitOps with Argo CD"},
+			}},
+		},
+	},
+	{
+		Slug:  "data-scientist",
+		Title: "Data Scientist",
+		Sections: []nodeSpec{
+			{Title: "Foundations", Children: []nodeSpec{
+				{Title: "Python for data science"},
+				{Title: "Statistics & probability"},
+				{Title: "SQL for analysis"},
+			}},
+			{Title: "Data Wrangling", Children: []nodeSpec{
+				{Title: "pandas"},
+				{Title: "Data cleaning"},
+				{Title: "Exploratory data analysis"},
+			}},
+			{Title: "Visualization", Children: []nodeSpec{
+				{Title: "Matplotlib & seaborn"},
+				{Title: "Storytelling with data"},
+			}},
+			{Title: "Machine Learning", Children: []nodeSpec{
+				{Title: "Supervised learning"},
+				{Title: "Unsupervised learning"},
+				{Title: "Feature engineering"},
+				{Title: "Model evaluation & validation"},
+			}},
+			{Title: "Applied Topics", Children: []nodeSpec{
+				{Title: "Time series basics"},
+				{Title: "Natural language processing"},
+			}},
+			{Title: "Workflow", Children: []nodeSpec{
+				{Title: "Notebooks & reproducible analysis"},
+				{Title: "Experiment tracking & MLOps"},
+			}},
+		},
+	},
+	{
+		Slug:  "mobile-engineer",
+		Title: "Mobile Engineer",
+		Sections: []nodeSpec{
+			{Title: "Foundations", Children: []nodeSpec{
+				{Title: "Mobile app fundamentals"},
+				{Title: "Mobile UI & UX design"},
+			}},
+			{Title: "Cross-Platform", Children: []nodeSpec{
+				{Title: "React Native"},
+				{Title: "Flutter & Dart"},
+			}},
+			{Title: "Native iOS", Children: []nodeSpec{
+				{Title: "Swift"},
+				{Title: "SwiftUI"},
+			}},
+			{Title: "Native Android", Children: []nodeSpec{
+				{Title: "Kotlin"},
+				{Title: "Jetpack Compose"},
+			}},
+			{Title: "Architecture & Data", Children: []nodeSpec{
+				{Title: "App architecture & state"},
+				{Title: "Networking & local storage"},
+			}},
+			{Title: "Quality", Children: []nodeSpec{
+				{Title: "Testing mobile apps"},
+				{Title: "Performance & debugging"},
+			}},
+			{Title: "Release", Children: []nodeSpec{
+				{Title: "Publishing to the App Store & Google Play"},
+				{Title: "Push notifications & analytics"},
+			}},
+		},
+	},
 }
 
 func (r *PgxRepository) Run(ctx context.Context) error {

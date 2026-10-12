@@ -23,8 +23,10 @@ export default function PasswordField({
   const id = useId()
 
   return (
-    <label htmlFor={id} className="flex flex-col gap-1 text-sm text-slate-700">
-      {label}
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-ink">
+        {label}
+      </label>
       <span className="relative flex items-center">
         <input
           id={id}
@@ -34,14 +36,14 @@ export default function PasswordField({
           minLength={minLength}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm text-slate-900 outline-none focus:border-slate-500"
+          className="input pr-11"
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
-          className="absolute right-2 flex h-6 w-6 items-center justify-center text-slate-400 transition hover:text-slate-600"
+          className="absolute right-2.5 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition-colors hover:text-ink"
         >
           {visible ? (
             <svg
@@ -78,6 +80,6 @@ export default function PasswordField({
         </button>
       </span>
       {helperText && <span className="text-xs text-slate-400">{helperText}</span>}
-    </label>
+    </div>
   )
 }

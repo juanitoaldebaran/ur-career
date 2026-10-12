@@ -1,45 +1,124 @@
 @import "tailwindcss";
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
+/*
+ * Design tokens. One white canvas, near-black ink, one blue accent.
+ * Type: Bricolage Grotesque for headings, Figtree for UI/body, JetBrains Mono for small labels.
+ */
+@theme {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-ink: #0a0e1a;
+  --color-brand: #2563eb;
+  --color-brand-soft: #eff4ff;
+  --color-line: #e5e8ef;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  body {
+    background: #fff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
   }
 }
 
-.rise-in {
-  animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rise-in {
-    animation: none;
+@layer components {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-brand);
   }
-}
 
-@keyframes border-glow {
-  0%,
-  100% {
-    border-color: rgba(37, 99, 235, 0.15);
-    box-shadow: 0 0 0 rgba(37, 99, 235, 0);
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
   }
-  50% {
-    border-color: rgba(37, 99, 235, 0.9);
-    box-shadow: 0 0 24px 2px rgba(37, 99, 235, 0.45);
+  .btn-primary {
+    background: var(--color-ink);
+    color: #fff;
   }
-}
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-brand);
+  }
+  .btn-primary:disabled {
+    opacity: 0.55;
+  }
+  .btn-ghost {
+    border: 1px solid var(--color-line);
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
 
-.glow-border {
-  animation: border-glow 2.5s ease-in-out infinite;
-}
+  .input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    padding: 0.7rem 0.875rem;
+    font-size: 0.9375rem;
+    color: var(--color-ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input::placeholder {
+    color: #9aa3b5;
+  }
+  .input:hover {
+    border-color: #cdd3e0;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 4px rgb(37 99 235 / 0.12);
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .glow-border {
-    animation: none;
-    border-color: rgba(37, 99, 235, 0.4);
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #3d4659;
+  }
+  .chip-brand {
+    border-color: transparent;
+    background: var(--color-brand-soft);
+    color: #1d4ed8;
+  }
+  .chip-ink {
+    border-color: transparent;
+    background: var(--color-ink);
+    color: #fff;
   }
 }

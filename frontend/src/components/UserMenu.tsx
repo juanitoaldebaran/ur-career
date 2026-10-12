@@ -38,7 +38,7 @@ export default function UserMenu({ inline = false }: UserMenuProps) {
   if (inline) {
     return (
       <div className="flex items-center gap-3 px-1">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
           {initial}
         </span>
         <p className="min-w-0 flex-1 truncate text-sm text-slate-500">{user.email}</p>
@@ -59,7 +59,7 @@ export default function UserMenu({ inline = false }: UserMenuProps) {
         whileTap={{ scale: 0.92 }}
         onClick={() => setOpen((value) => !value)}
         className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-medium text-white transition-colors ${
-          open ? 'bg-blue-600' : 'bg-slate-900 hover:bg-blue-600'
+          open ? 'bg-brand' : 'bg-ink hover:bg-brand'
         }`}
         aria-haspopup="true"
         aria-expanded={open}

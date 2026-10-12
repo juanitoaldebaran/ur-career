@@ -9,6 +9,7 @@ import {
   useSpring,
 } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
+import Logo from './Logo'
 import UserMenu from './UserMenu'
 
 const NAV_ITEMS = [
@@ -80,18 +81,13 @@ export default function Navbar() {
             paddingBottom: scrolled ? 6 : 8,
           }}
           transition={{ duration: 0.25 }}
-          className={`flex items-center justify-between gap-3 rounded-xl border px-4 backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300 sm:gap-8 sm:px-6 ${
+          className={`flex items-center justify-between gap-3 rounded-full border px-4 backdrop-blur-md sm:pl-5 transition-[background-color,border-color,box-shadow] duration-300 sm:gap-8 sm:px-6 ${
             scrolled
-              ? 'border-slate-200 bg-white/85 shadow-lg shadow-slate-900/5'
-              : 'border-slate-200 bg-white shadow-sm'
+              ? 'border-line bg-white/85 shadow-lg shadow-ink/5'
+              : 'border-line bg-white shadow-sm'
           }`}
         >
-          <Link to="/" className="group text-lg font-bold tracking-tight">
-            <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
-              <span className="text-blue-600">ur</span>
-              <span className="text-black">-career</span>
-            </motion.span>
-          </Link>
+          <Logo />
 
           <nav
             className="relative hidden items-center gap-1 md:flex"
@@ -107,7 +103,7 @@ export default function Navbar() {
                   onFocus={() => setHovered(item.to)}
                   onBlur={() => setHovered(null)}
                   className={`relative rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                    active ? 'text-blue-600' : 'text-slate-600 hover:text-slate-900'
+                    active ? 'text-ink' : 'text-slate-500 hover:text-ink'
                   }`}
                 >
                   {hovered === item.to && !active && (
@@ -120,7 +116,7 @@ export default function Navbar() {
                   {active && (
                     <motion.span
                       layoutId="nav-active"
-                      className="absolute inset-0 -z-10 rounded-full bg-blue-50"
+                      className="absolute inset-0 -z-10 rounded-full bg-brand-soft"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -137,7 +133,7 @@ export default function Navbar() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   to="/login"
-                  className="block rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+                  className="btn btn-primary !rounded-full !px-4 !py-1.5"
                 >
                   Sign in
                 </Link>
@@ -180,7 +176,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-10 bg-slate-900/20 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-10 bg-ink/20 backdrop-blur-sm md:hidden"
             />
             <motion.div
               key="panel"
@@ -204,7 +200,7 @@ export default function Navbar() {
                       to={navItem.to}
                       className={`flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
                         active
-                          ? 'bg-blue-50 text-blue-600'
+                          ? 'bg-brand-soft text-ink'
                           : 'text-slate-700 hover:bg-slate-100 active:bg-slate-100'
                       }`}
                     >
@@ -228,7 +224,7 @@ export default function Navbar() {
                 ) : (
                   <Link
                     to="/login"
-                    className="rounded-xl bg-slate-900 px-3 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-blue-600"
+                    className="btn btn-primary w-full"
                   >
                     Sign in
                   </Link>
