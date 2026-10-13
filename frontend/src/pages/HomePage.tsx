@@ -251,7 +251,7 @@ function Hero({ headline, primary, secondary }: HeroProps) {
           transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
           className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-500 sm:text-lg"
         >
-          Plan your path, build your CV, and practice for the roles you want — all in one place.
+          Plan your path, build your CV, and practice for the roles you want - all in one place.
         </motion.p>
 
         <motion.div
