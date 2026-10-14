@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../lib/AuthContext'
 import TypingWord from '../components/TypingWord'
 import { CtaBanner, HomeFooter, HowItWorks, WhySection } from '../components/HomeSections'
+import { CareerExplorer, Faq, ProductPreview, StatsBand, TechMarquee } from '../components/LandingSections'
 
 const GREETING_PREFIX = 'Welcome back, '
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -303,6 +304,9 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
         secondary={guest ? { label: 'Sign in', to: '/login' } : { label: 'Explore roadmaps', to: '/roadmap' }}
       />
 
+      {guest && <ProductPreview />}
+      {guest && <TechMarquee />}
+
       <motion.section
         variants={container}
         initial="hidden"
@@ -328,8 +332,11 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
         </div>
       </motion.section>
 
+      {guest && <CareerExplorer />}
       <HowItWorks />
       <WhySection />
+      {guest && <StatsBand />}
+      {guest && <Faq />}
       <CtaBanner guest={guest} />
       <HomeFooter />
     </div>
