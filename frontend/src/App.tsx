@@ -11,6 +11,7 @@ import CvBuilderPage from './pages/CvBuilderPage'
 import RoadmapsPage from './pages/RoadmapsPage'
 import RoadmapDetailPage from './pages/RoadmapDetailPage'
 import PracticePage from './pages/PracticePage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/roadmap" element={<RoadmapsPage />} />
           <Route path="/roadmap/:slug" element={<RoadmapDetailPage />} />
           <Route path="/practice" element={<PracticePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </AuthProvider>

@@ -51,6 +51,7 @@ export interface TokenPair {
 
 export interface Profile {
   user_id: string
+  full_name: string
   current_role: string
   target_role: string
   updated_at: string
@@ -108,6 +109,20 @@ export function me(accessToken: string): Promise<AuthUser> {
 export function getProfile(accessToken: string): Promise<Profile> {
   return request('/profile', {
     headers: { Authorization: `Bearer ${accessToken}`},
+  })
+}
+
+export interface ProfileInput {
+  full_name: string
+  current_role: string
+  target_role: string
+}
+
+export function updateProfile(input: ProfileInput, accessToken: string): Promise<Profile> {
+  return request('/profile', {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify(input),
   })
 }
 
