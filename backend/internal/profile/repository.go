@@ -17,6 +17,7 @@ var (
 
 type Profile struct {
 	UserID      uuid.UUID `json:"user_id"`
+	FullName    string    `json:"full_name"`
 	CurrentRole string    `json:"current_job_role"`
 	TargetRole  string    `json:"target_role"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -35,7 +36,7 @@ type PgxRepository struct {
 type Repository interface {
 	GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*Profile, error)
 	ListSkills(ctx context.Context, profileID uuid.UUID) ([]Skills, error)
-	UpsertProfile(ctx context.Context, userID uuid.UUID, currentRole, targetRole string, constraints []byte) (*Profile, error)
+	UpsertProfile(ctx context.Context, userID uuid.UUID, fullName, currentRole, targetRole string, constraints []byte) (*Profile, error)
 }
 
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
@@ -46,7 +47,7 @@ func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
 
 func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*Profile, error) {
 	const query = `
-	SELECT user_id, current_job_role, target_role, updated_at
+	SELECT user_id, full_name, COALESCE(current_job_role, ''), COALESCE(target_role, ''), updated_at
 	FROM profiles
 	WHERE user_id = $1
 	`
@@ -54,6 +55,7 @@ func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID
 	var profile Profile
 	err := r.db.QueryRow(ctx, query, userID).Scan(
 		&profile.UserID,
+		&profile.FullName,
 		&profile.CurrentRole,
 		&profile.TargetRole,
 		&profile.UpdatedAt,
@@ -94,21 +96,24 @@ func (r *PgxRepository) ListSkills(ctx context.Context, profileID uuid.UUID) ([]
 	return skills, nil
 }
 
-func (r *PgxRepository) UpsertProfile(ctx context.Context, userID uuid.UUID, currentRole, targetRole string, constraints []byte) (*Profile, error) {
+func (r *PgxRepository) UpsertProfile(ctx context.Context, userID uuid.UUID, fullName, currentRole, targetRole string, constraints []byte) (*Profile, error) {
+	// A JSON null means "constraints not provided": keep what is stored.
 	const query = `
-	INSERT INTO profiles (user_id, current_job_role, target_role, constraints)
-	VALUES ($1, $2, $3, $4)
+	INSERT INTO profiles (user_id, full_name, current_job_role, target_role, constraints)
+	VALUES ($1, $2, $3, $4, COALESCE(NULLIF($5::jsonb, 'null'::jsonb), '{}'::jsonb))
 	ON CONFLICT (user_id) DO UPDATE
-	SET current_job_role = EXCLUDED.current_job_role,
+	SET full_name = EXCLUDED.full_name,
+	    current_job_role = EXCLUDED.current_job_role,
 	    target_role = EXCLUDED.target_role,
-	    constraints = EXCLUDED.constraints,
+	    constraints = COALESCE(NULLIF($5::jsonb, 'null'::jsonb), profiles.constraints),
 	    updated_at = now()
-	RETURNING user_id, current_job_role, target_role, updated_at
+	RETURNING user_id, full_name, COALESCE(current_job_role, ''), COALESCE(target_role, ''), updated_at
 	`
 
 	var profile Profile
-	err := r.db.QueryRow(ctx, query, userID, currentRole, targetRole, constraints).Scan(
+	err := r.db.QueryRow(ctx, query, userID, fullName, currentRole, targetRole, constraints).Scan(
 		&profile.UserID,
+		&profile.FullName,
 		&profile.CurrentRole,
 		&profile.TargetRole,
 		&profile.UpdatedAt,

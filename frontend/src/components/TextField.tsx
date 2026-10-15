@@ -8,9 +8,10 @@ interface TextFieldProps {
   autoComplete?: InputHTMLAttributes<HTMLInputElement>['autoComplete']
   placeholder?: string
   required?: boolean
+  list?: string
 }
 
-export default function TextField({ label, value, onChange, type = 'text', autoComplete, placeholder, required }: TextFieldProps) {
+export default function TextField({ label, value, onChange, type = 'text', autoComplete, placeholder, required, list }: TextFieldProps) {
   const id = useId()
   return (
     <div className="flex flex-col gap-1.5">
@@ -23,6 +24,7 @@ export default function TextField({ label, value, onChange, type = 'text', autoC
         autoComplete={autoComplete}
         placeholder={placeholder}
         required={required}
+        list={list}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="input"

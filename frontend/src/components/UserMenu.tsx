@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 
@@ -38,10 +39,12 @@ export default function UserMenu({ inline = false }: UserMenuProps) {
   if (inline) {
     return (
       <div className="flex items-center gap-3 px-1">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
-          {initial}
-        </span>
-        <p className="min-w-0 flex-1 truncate text-sm text-slate-500">{user.email}</p>
+        <Link to="/profile" className="flex min-w-0 flex-1 items-center gap-3" aria-label="View profile">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
+            {initial}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm text-slate-500">{user.email}</span>
+        </Link>
         <button
           onClick={() => void logout()}
           className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
@@ -81,9 +84,16 @@ export default function UserMenu({ inline = false }: UserMenuProps) {
             <p className="truncate border-b border-slate-100 px-3 py-2 text-sm text-slate-500">
               {user.email}
             </p>
+            <Link
+              to="/profile"
+              onClick={() => setOpen(false)}
+              className="block w-full px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-brand-soft hover:text-brand"
+            >
+              Profile
+            </Link>
             <button
               onClick={() => void logout()}
-              className="w-full px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-600"
+              className="w-full px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-brand-soft hover:text-brand"
             >
               Log out
             </button>

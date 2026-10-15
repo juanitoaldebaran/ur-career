@@ -16,12 +16,14 @@ type Handler struct {
 
 type ProfileResponse struct {
 	UserID      string    `json:"user_id"`
+	FullName    string    `json:"full_name"`
 	CurrentRole string    `json:"current_role"`
 	TargetRole  string    `json:"target_role"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type UpdateProfileResquest struct {
+	FullName    string         `json:"full_name"`
 	CurrentRole string         `json:"current_role"`
 	TargetRole  string         `json:"target_role"`
 	Constraints map[string]any `json:"constraints"`
@@ -57,6 +59,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	httpx.WriteJSON(w, http.StatusOK, ProfileResponse{
 		UserID:      profile.UserID.String(),
+		FullName:    profile.FullName,
 		CurrentRole: profile.CurrentRole,
 		TargetRole:  profile.TargetRole,
 		UpdatedAt:   profile.UpdatedAt,
@@ -76,10 +79,10 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := h.service.UpdateProfile(r.Context(), userID, updateProfileReq.CurrentRole, updateProfileReq.TargetRole, updateProfileReq.Constraints)
+	profile, err := h.service.UpdateProfile(r.Context(), userID, updateProfileReq.FullName, updateProfileReq.CurrentRole, updateProfileReq.TargetRole, updateProfileReq.Constraints)
 	if err != nil {
 		switch {
-		case errors.Is(err, ErrCurrentRoleIsReq), errors.Is(err, ErrTargetRoleIsReq):
+		case errors.Is(err, ErrCurrentRoleIsReq), errors.Is(err, ErrTargetRoleIsReq), errors.Is(err, ErrFieldTooLong):
 			httpx.WriteError(w, http.StatusBadRequest, err.Error())
 		default:
 			httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
@@ -89,6 +92,7 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	httpx.WriteJSON(w, http.StatusOK, ProfileResponse{
 		UserID:      profile.UserID.String(),
+		FullName:    profile.FullName,
 		CurrentRole: profile.CurrentRole,
 		TargetRole:  profile.TargetRole,
 		UpdatedAt:   profile.UpdatedAt,
