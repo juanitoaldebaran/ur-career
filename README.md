@@ -4,9 +4,9 @@ An AI career coach that turns a user's background, goals, and the job market int
 
 ## Stack
 
-- **Frontend** — React + TypeScript, React Router, Tailwind CSS, Vite
-- **Backend** — Go (stdlib `net/http`, method-pattern routing), `pgx/v5`
-- **Database** — PostgreSQL (Supabase)
+- **Frontend**  React + TypeScript, React Router, Tailwind CSS, Vite
+- **Backend**  Go (stdlib `net/http`, method-pattern routing), `pgx/v5`
+- **Database**  PostgreSQL (Supabase)
 
 ## Status
 
