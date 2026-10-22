@@ -63,6 +63,13 @@ func main() {
 		}
 	}
 
+	var authStore ratelimit.Store = ratelimit.NewMemory(5, time.Minute)
+	if rdb != nil {
+		authStore = ratelimit.NewRedis(rdb, "rl:auth:", 5, time.Minute)
+	}
+	authLimiter := ratelimit.NewRedisLimiter(authStore, 5, true, ratelimit.IPKey)
+	handler.RegisterRoutes(mux, authLimiter.RedisLimit)
+
 	var roadmapRepo roadmap.Repository = roadmap.NewPgxRepository(pool)
 	if redisCache != nil {
 		roadmapRepo = roadmap.NewCachedRepository(roadmapRepo, redisCache)

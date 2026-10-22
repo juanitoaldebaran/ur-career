@@ -22,6 +22,8 @@ func NewRedis(ctx context.Context, url string) (*Redis, error) {
 	opts.DialTimeout = 2 * time.Second
 	opts.ReadTimeout = 200 * time.Millisecond
 	opts.WriteTimeout = 200 * time.Millisecond
+	opts.DialerRetries = 1
+	opts.MaxRetries = 1
 
 	client := redis.NewClient(opts)
 
@@ -36,6 +38,10 @@ func NewRedis(ctx context.Context, url string) (*Redis, error) {
 	return &Redis{
 		client: client,
 	}, nil
+}
+
+func (r *Redis) Client() *redis.Client {
+	return r.client
 }
 
 func (r *Redis) Get(ctx context.Context, key string) ([]byte, error) {
