@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/cache"
@@ -50,6 +51,7 @@ func main() {
 	mux.HandleFunc("GET /health", healthCheckHandler(pool))
 
 	var redisCache cache.Cache
+	var rdb *redis.Client
 	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
 		rc, err := cache.NewRedis(ctx, redisURL)
 		if err != nil {
@@ -57,8 +59,16 @@ func main() {
 		} else {
 			defer rc.Close()
 			redisCache = rc
+			rdb = rc.Client()
 		}
 	}
+
+	var authStore ratelimit.Store = ratelimit.NewMemory(5, time.Minute)
+	if rdb != nil {
+		authStore = ratelimit.NewRedis(rdb, "rl:auth:", 5, time.Minute)
+	}
+	authLimiter := ratelimit.NewRedisLimiter(authStore, 5, true, ratelimit.IPKey)
+	handler.RegisterRoutes(mux, authLimiter.RedisLimit)
 
 	var roadmapRepo roadmap.Repository = roadmap.NewPgxRepository(pool)
 	if redisCache != nil {
