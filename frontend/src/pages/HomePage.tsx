@@ -300,7 +300,7 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
             <TypingWord text={fullText} highlightFrom={GREETING_PREFIX.length} />
           )
         }
-        primary={guest ? { label: 'Get started free', to: '/register' } : { label: 'Start a consultation', to: '/consultation' }}
+        primary={guest ? { label: 'Start now', to: '/register' } : { label: 'Start a consultation', to: '/consultation' }}
         secondary={guest ? { label: 'Sign in', to: '/login' } : { label: 'Explore roadmaps', to: '/roadmap' }}
       />
 
