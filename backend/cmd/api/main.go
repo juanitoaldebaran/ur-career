@@ -46,8 +46,6 @@ func main() {
 	handler := auth.NewHandler(service)
 
 	mux := http.NewServeMux()
-	limiter := ratelimit.New(5, time.Minute)
-	handler.RegisterRoutes(mux, limiter.Limit)
 	mux.HandleFunc("GET /health", healthCheckHandler(pool))
 
 	var redisCache cache.Cache
