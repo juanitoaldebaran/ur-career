@@ -149,3 +149,98 @@ export function updateNodeStatus(
     body: JSON.stringify({ status }),
   })
 }
+
+export type PracticeCategory = 'coding' | 'system_design'
+
+export interface PracticeQuestion {
+  id: string
+  category: PracticeCategory
+  difficulty: 'easy' | 'medium' | 'hard'
+  prompt: string
+  approach: string
+  evaluating: string
+  best_score: number | null
+}
+
+export interface PracticeCriterion {
+  name: string
+  score: number
+  max: number
+  comment: string
+}
+
+export interface PracticeResult {
+  attempt_id: string
+  score: number
+  feedback: string
+  criteria: PracticeCriterion[]
+  reference_answer: string
+}
+
+export function listPracticeQuestions(
+  role: string,
+  accessToken: string,
+): Promise<PracticeQuestion[]> {
+  return request(`/practice/questions?role=${encodeURIComponent(role)}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
+export function submitPracticeAnswer(
+  questionId: string,
+  answer: string,
+  accessToken: string,
+): Promise<PracticeResult> {
+  return request(`/practice/questions/${questionId}/attempts`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ answer }),
+  })
+}
+
+export interface QuizQuestion {
+  id: string
+  prompt: string
+  options: string[]
+}
+
+export interface QuizSession {
+  id: string
+  role: string
+  questions: QuizQuestion[]
+}
+
+export interface QuizReviewItem {
+  question_id: string
+  selected: number | null
+  correct: number
+  is_correct: boolean
+  explanation: string
+}
+
+export interface QuizResult {
+  score: number
+  correct: number
+  total: number
+  review: QuizReviewItem[]
+}
+
+export function createQuiz(role: string, accessToken: string): Promise<QuizSession> {
+  return request('/practice/quizzes', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ role }),
+  })
+}
+
+export function submitQuiz(
+  quizId: string,
+  answers: Record<string, number>,
+  accessToken: string,
+): Promise<QuizResult> {
+  return request(`/practice/quizzes/${quizId}/submit`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ answers }),
+  })
+}
