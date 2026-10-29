@@ -45,6 +45,14 @@ type PgxQuizRepository struct {
 	db *pgxpool.Pool
 }
 
+type QuizRepository interface {
+	RoleInfo(ctx context.Context, role string, topicCount int) (title string, topics []string, err error)
+	RecentPrompts(ctx context.Context, userID uuid.UUID, role string, limit int) ([]string, error)
+	CreateQuiz(ctx context.Context, userID uuid.UUID, role string, qs []GeneratedQuestion) (*QuizSession, error)
+	LoadForGrading(ctx context.Context, quizID, userID uuid.UUID) ([]storedQuestion, error)
+	SaveResult(ctx context.Context, quizID uuid.UUID, answers map[string]int, score int) error
+}
+
 func NewPgxQuizRepository(db *pgxpool.Pool) *PgxQuizRepository {
 	return &PgxQuizRepository{
 		db: db,

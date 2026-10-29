@@ -21,6 +21,10 @@ type GeminiQuizGenerator struct {
 	g *ai.Gemini
 }
 
+type QuizGenerator interface {
+	Generate(ctx context.Context, roleTitle string, topics, avoid []string) ([]GeneratedQuestion, error)
+}
+
 func NewGeminiQuizGenerator(g *ai.Gemini) *GeminiQuizGenerator {
 	return &GeminiQuizGenerator{
 		g: g,
