@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const maxAttempt = 3
+
 type Gemini struct {
 	apiKey string
 	model  string
@@ -49,7 +51,25 @@ func (g *Gemini) GenerateJSON(ctx context.Context, system, user string, schema m
 	req.Header.Set("x-goog-api-key", g.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := g.client.Do(req)
+	var resp *http.Response
+	for attempt := 0; attempt < maxAttempt; attempt++ {
+		resp, err = g.client.Do(req.Clone(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != http.StatusServiceUnavailable && resp.StatusCode != http.StatusTooManyRequests {
+			break
+		}
+		resp.Body.Close()
+		select {
+		case <-time.After(time.Duration(attempt+1) * 2 * time.Second):
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
+	defer resp.Body.Close()
+
 	if err != nil {
 		return nil, err
 	}
