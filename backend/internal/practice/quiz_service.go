@@ -60,6 +60,7 @@ func (s *QuizService) Create(ctx context.Context, userID uuid.UUID, role string)
 
 	questions := cleanQuestions(generatedQuiz)
 	if len(questions) < quizSize {
+		log.Printf("quiz generate: only %d of %d valid questions", len(questions), quizSize)
 		return nil, ErrQuizGeneration
 	}
 

@@ -43,35 +43,32 @@ func (g *Gemini) GenerateJSON(ctx context.Context, system, user string, schema m
 	}
 
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent", g.model)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("x-goog-api-key", g.apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
 	var resp *http.Response
 	for attempt := 0; attempt < maxAttempt; attempt++ {
-		resp, err = g.client.Do(req.Clone(ctx))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 		if err != nil {
 			return nil, err
 		}
 
-		if resp.StatusCode != http.StatusServiceUnavailable && resp.StatusCode != http.StatusTooManyRequests {
+		req.Header.Set("x-goog-api-key", g.apiKey)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err = g.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		retryable := resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusTooManyRequests
+		if !retryable || attempt == maxAttempt-1 {
 			break
 		}
+
 		resp.Body.Close()
 		select {
 		case <-time.After(time.Duration(attempt+1) * 2 * time.Second):
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		}
-	}
-	defer resp.Body.Close()
-
-	if err != nil {
-		return nil, err
 	}
 
 	defer resp.Body.Close()

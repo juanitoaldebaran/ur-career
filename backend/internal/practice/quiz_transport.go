@@ -85,7 +85,7 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, ErrQuizSubmitted):
 		httpx.WriteError(w, http.StatusConflict, "quiz already submitted")
 	default:
-		log.Printf("quiz create: %v", err)
+		log.Printf("quiz submit: %v", err)
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 	}
 }
