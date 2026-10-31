@@ -51,7 +51,7 @@ func (s *QuizService) Create(ctx context.Context, userID uuid.UUID, role string)
 		return nil, err
 	}
 
-	generatedQuiz, err := s.gen.Generate(ctx, role, topics, avoid)
+	generatedQuiz, err := s.gen.Generate(ctx, title, topics, avoid)
 	if err != nil {
 		return nil, ErrQuizGeneration
 	}
@@ -64,7 +64,7 @@ func (s *QuizService) Create(ctx context.Context, userID uuid.UUID, role string)
 	return s.repo.CreateQuiz(ctx, userID, role, questions)
 }
 
-func (s *QuizService) Submit(ctx context.Context, quizID uuid.UUID, userID uuid.UUID, answers map[string]int) (*QuizResult, error) {
+func (s *QuizService) Submit(ctx context.Context, userID, quizID uuid.UUID, answers map[string]int) (*QuizResult, error) {
 	storedQuestions, err := s.repo.LoadForGrading(ctx, quizID, userID)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (s *QuizService) Submit(ctx context.Context, quizID uuid.UUID, userID uuid.
 		result.Score = result.Correct * 100 / result.Total
 	}
 
-	if err := s.repo.SaveResult(ctx, quizID, answers, result.Score); err != nil {
+	if err := s.repo.SaveResult(ctx, quizID, clean, result.Score); err != nil {
 		return nil, err
 	}
 

@@ -133,6 +133,14 @@ func loadEnvironment() (databaseUrl, jwtSecretKey, portValue string) {
 		log.Fatalf("PORT is empty")
 	}
 
+	if os.Getenv("GEMINI_API_KEY") == "" {
+		log.Fatalf("GEMINI_API_KEY is empty")
+	}
+
+	if os.Getenv("GEMINI_MODEL") == "" {
+		log.Fatalf("GEMINI_MODEL is empty")
+	}
+
 	return databaseUrl, jwtSecretKey, portValue
 
 }
