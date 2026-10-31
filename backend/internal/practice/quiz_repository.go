@@ -32,7 +32,7 @@ type QuizQuestions struct {
 type QuizSession struct {
 	ID        uuid.UUID       `json:"id"`
 	Role      string          `json:"role"`
-	Questions []QuizQuestions `json:"question"`
+	Questions []QuizQuestions `json:"questions"`
 }
 
 type storedQuestion struct {
