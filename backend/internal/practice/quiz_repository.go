@@ -74,7 +74,7 @@ func (r *PgxQuizRepository) RoleInfo(ctx context.Context, role string, topicCoun
 	rows, err := r.db.Query(ctx, `
 		SELECT n.title FROM roadmap_nodes n 
 		JOIN roadmaps m ON m.id = n.roadmap_id
-		WHERE slug = $1
+		WHERE m.slug = $1
 		ORDER BY random() LIMIT $2
 	`, role, topicCount)
 
@@ -93,7 +93,7 @@ func (r *PgxQuizRepository) RoleInfo(ctx context.Context, role string, topicCoun
 		topics = append(topics, t)
 	}
 
-	return title, topics, nil
+	return title, topics, rows.Err()
 }
 
 func (r *PgxQuizRepository) RecentPrompts(ctx context.Context, userID uuid.UUID, role string, limit int) ([]string, error) {
@@ -119,7 +119,7 @@ func (r *PgxQuizRepository) RecentPrompts(ctx context.Context, userID uuid.UUID,
 		prompts = append(prompts, prompt)
 	}
 
-	return prompts, nil
+	return prompts, rows.Err()
 }
 
 func (r *PgxQuizRepository) CreateQuiz(ctx context.Context, userID uuid.UUID, role string, qs []GeneratedQuestion) (*QuizSession, error) {
@@ -193,13 +193,13 @@ func (r *PgxQuizRepository) LoadForGrading(ctx context.Context, quizID, userID u
 	var out []storedQuestion
 	for rows.Next() {
 		var q storedQuestion
-		if err := rows.Scan(&q); err != nil {
+		if err := rows.Scan(&q.ID, &q.CorrectIndex, &q.Explanation); err != nil {
 			return nil, err
 		}
 		out = append(out, q)
 	}
 
-	return out, nil
+	return out, rows.Err()
 }
 
 func (r *PgxQuizRepository) SaveResult(ctx context.Context, quizID uuid.UUID, answers map[string]int, score int) error {

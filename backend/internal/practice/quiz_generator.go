@@ -14,7 +14,7 @@ const (
 	quizSize    = 15
 	quizOverAsk = 18
 	quizTopics  = 8
-	quizRecentN = 20
+	quizRecentN = 45
 )
 
 type GeminiQuizGenerator struct {

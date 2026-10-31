@@ -1,7 +1,6 @@
 package practice
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -39,7 +38,7 @@ func (h *QuizHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := h.service.Create(context.Background(), userID, req.Role)
+	session, err := h.service.Create(r.Context(), userID, req.Role)
 	switch {
 	case err == nil:
 		httpx.WriteJSON(w, http.StatusCreated, session)
@@ -74,11 +73,11 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.Submit(context.Background(), userID, quizID, req.Answer)
+	result, err := h.service.Submit(r.Context(), userID, quizID, req.Answer)
 
 	switch {
 	case err == nil:
-		httpx.WriteJSON(w, http.StatusCreated, result)
+		httpx.WriteJSON(w, http.StatusOK, result)
 	case errors.Is(err, ErrQuizNotFound):
 		httpx.WriteError(w, http.StatusNotFound, "quiz not found")
 	case errors.Is(err, ErrQuizSubmitted):
