@@ -65,7 +65,7 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Answer map[string]int `json:"answer"`
+		Answer map[string]int `json:"answers"`
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 8<<10)

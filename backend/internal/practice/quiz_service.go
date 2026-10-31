@@ -83,7 +83,7 @@ func (s *QuizService) Submit(ctx context.Context, quizID uuid.UUID, userID uuid.
 			Explanation: q.Explanation,
 		}
 
-		if sel, ok := answers[q.ID.String()]; ok && sel >= 0 || sel <= 3 {
+		if sel, ok := answers[q.ID.String()]; ok && sel >= 0 && sel <= 3 {
 			item.Selected = &sel
 			item.IsCorrect = sel == q.CorrectIndex
 			clean[q.ID.String()] = sel

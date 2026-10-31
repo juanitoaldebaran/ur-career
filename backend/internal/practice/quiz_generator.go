@@ -42,15 +42,13 @@ var quizSchema = map[string]any{
 		"questions": map[string]any{"type": "ARRAY", "items": map[string]any{
 			"type": "OBJECT",
 			"properties": map[string]any{
-				"prompt": map[string]any{"type": "STRING"},
-				"options": map[string]any{
-					"type":  "ARRAY",
-					"items": map[string]any{"type": "STRING"},
-				},
+				"prompt":        map[string]any{"type": "STRING"},
+				"options":       map[string]any{"type": "ARRAY", "items": map[string]any{"type": "STRING"}},
+				"correct_index": map[string]any{"type": "INTEGER"},
+				"explanation":   map[string]any{"type": "STRING"},
 			},
-			"correct_index": map[string]any{"type": "INTEGER"},
-			"explanation":   map[string]any{"type": "STRING"},
-		}, "required": []string{"prompt", "options", "correct_index", "explanation"}},
+			"required": []string{"prompt", "options", "correct_index", "explanation"},
+		}},
 	},
 	"required": []string{"questions"},
 }
@@ -118,7 +116,7 @@ func validQuestion(q GeneratedQuestion) bool {
 func shuffleQuestions(q *GeneratedQuestion) {
 	correct := q.Options[q.CorrectIndex]
 	rand.Shuffle(len(q.Options), func(i, j int) {
-		q.Options[i], q.Options[j] = q.Options[i], q.Options[j]
+		q.Options[i], q.Options[j] = q.Options[j], q.Options[i]
 	})
 
 	for i, o := range q.Options {

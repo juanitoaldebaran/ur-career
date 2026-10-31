@@ -15,6 +15,8 @@ import (
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/cache"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/practice"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/practice/ai"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/profile"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/ratelimit"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/roadmap"
@@ -22,7 +24,6 @@ import (
 )
 
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, relying on system environment variables")
 	}
@@ -85,6 +86,10 @@ func main() {
 		Addr:    ":" + port,
 		Handler: corsEnable(mux),
 	}
+
+	gemini := ai.NewGemini(os.Getenv("GEMINI_API_KEY"), os.Getenv("GEMINI_MODEL"))
+	quizHandler := practice.NewQuizHandler(practice.NewQuizService(practice.NewPgxQuizRepository(pool), practice.NewGeminiQuizGenerator(gemini)))
+	quizHandler.RegisterRoutes(mux, handler.Authenticate)
 
 	if len(os.Args) > 1 && os.Args[1] == "seed" {
 		if err := seed.NewPgxRepository(pool).Run(ctx); err != nil {
