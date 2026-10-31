@@ -3,6 +3,7 @@ package practice
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -47,6 +48,7 @@ func (h *QuizHandler) Create(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, ErrQuizGeneration):
 		httpx.WriteError(w, http.StatusBadGateway, "could not generate quiz, try again")
 	default:
+		log.Printf("quiz create: %v", err)
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 	}
 }
@@ -83,6 +85,7 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, ErrQuizSubmitted):
 		httpx.WriteError(w, http.StatusConflict, "quiz already submitted")
 	default:
+		log.Printf("quiz create: %v", err)
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 	}
 }
