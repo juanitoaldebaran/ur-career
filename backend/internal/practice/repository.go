@@ -27,7 +27,9 @@ type Question struct {
 
 type Criterion struct {
 	Name        string `json:"name"`
+	Score       int    `json:"score"`
 	Max         int    `json:"max"`
+	Comment     string `json:"comment"`
 	Description string `json:"description"`
 }
 
