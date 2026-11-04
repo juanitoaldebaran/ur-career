@@ -163,7 +163,7 @@ func (r *PgxQuizRepository) CreateQuiz(ctx context.Context, userID uuid.UUID, ro
 func (r *PgxQuizRepository) LoadForGrading(ctx context.Context, quizID, userID uuid.UUID) ([]storedQuestion, error) {
 	var submitted bool
 	err := r.db.QueryRow(ctx,
-	`SELECT submitted_at IS NOT NULL 
+		`SELECT submitted_at IS NOT NULL 
 	 FROM quizzes 
 	 WHERE id = $1 AND user_id = $2
 	 `, quizID, userID,
