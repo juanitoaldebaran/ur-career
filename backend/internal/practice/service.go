@@ -3,13 +3,22 @@ package practice
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
 
+const (
+	minAnswerLen = 20
+	maxAnswerLen = 8000
+)
+
 var (
-	ErrAnswerTooShort = errors.New("answers must be at least 20 characters")
+	ErrAnswerTooShort = errors.New("answer must be at least 20 characters")
+	ErrAnswerTooLong  = errors.New("answer must be at most 8000 characters")
+	ErrGradingFailed  = errors.New("could not grade answer")
 )
 
 type Result struct {
@@ -70,4 +79,58 @@ func normalize(rubric []Criterion, grade *Grade) ([]CriterionScore, int) {
 	}
 
 	return results, earned * 100 / possible
+}
+
+func (s *Service) Submit(ctx context.Context, userID uuid.UUID, questionID uuid.UUID, answer string) (*Result, error) {
+	answer = strings.TrimSpace(answer)
+	if err := validateAnswer(answer); err != nil {
+		return nil, err
+	}
+
+	question, err := s.repo.GetQuestion(ctx, questionID)
+	if err != nil {
+		return nil, err
+	}
+
+	grade, err := s.grader.Grade(ctx, question, answer)
+	if err != nil {
+		log.Printf("practice grade: %v", err)
+		return nil, ErrGradingFailed
+	}
+
+	criteria, score := normalize(question.Rubric, grade)
+
+	attemptID, err := s.repo.SaveAttempt(ctx, Attempt{
+		UserID:     userID,
+		QuestionID: question.ID,
+		Answer:     answer,
+		Score:      score,
+		Feedback:   grade.Feedback,
+		Criteria:   criteria,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Result{
+		AttemptID:       attemptID,
+		Score:           score,
+		Feedback:        grade.Feedback,
+		Criteria:        criteria,
+		ReferenceAnswer: question.ReferenceAnswer,
+	}, nil
+}
+
+func validateAnswer(answer string) error {
+	length := utf8.RuneCountInString(answer)
+
+	if length < minAnswerLen {
+		return ErrAnswerTooShort
+	}
+
+	if length > maxAnswerLen {
+		return ErrAnswerTooLong
+	}
+
+	return nil
 }
