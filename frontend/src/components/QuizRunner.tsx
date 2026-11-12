@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 import { ApiError, submitQuiz, type QuizSession, type QuizResult } from '../lib/api'
@@ -23,6 +23,7 @@ export default function QuizRunner({
   const [result, setResult] = useState<QuizResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [onlyWrong, setOnlyWrong] = useState(false)
 
   const current = items[index]
   const answered = Object.keys(answers).length
@@ -40,6 +41,23 @@ export default function QuizRunner({
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+    if (result) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const key = e.key.toLowerCase()
+      const pick = ['a', 'b', 'c', 'd', 'e'].indexOf(key)
+      const num = Number(key) - 1
+      const choice = pick >= 0 ? pick : num >= 0 && num < 5 ? num : -1
+      const options = items[index]?.options?.length ?? 0
+      if (choice >= 0 && choice < options) setAnswers((a) => ({ ...a, [items[index].id]: choice }))
+      if (e.key === 'ArrowRight' || e.key === 'Enter') setIndex((i) => Math.min(i + 1, items.length - 1))
+      if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [result, index, items])
 
   if (result) {
     const tone = scoreTone(result.score)
@@ -59,10 +77,30 @@ export default function QuizRunner({
           </button>
         </div>
 
-        <p className="eyebrow mt-8">Review</p>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            { label: 'Correct', value: result.correct, tone: 'text-emerald-600' },
+            { label: 'Incorrect', value: result.review.filter((r) => !r.is_correct && r.selected !== null).length, tone: 'text-rose-600' },
+            { label: 'Skipped', value: result.review.filter((r) => r.selected === null).length, tone: 'text-slate-500' },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-2xl border border-line bg-white px-4 py-3">
+              <p className={`font-display text-2xl font-semibold leading-none ${stat.tone}`}>{stat.value}</p>
+              <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex items-center justify-between">
+          <p className="eyebrow">Review</p>
+          <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-500">
+            <input type="checkbox" checked={onlyWrong} onChange={(e) => setOnlyWrong(e.target.checked)} className="accent-brand" />
+            Show only missed
+          </label>
+        </div>
         <ol className="mt-3 space-y-4">
           {items.map((item, i) => {
             const r = byId.get(item.id)
+            if (onlyWrong && r?.is_correct) return null
             return (
               <li key={item.id} className="rounded-2xl border border-line bg-white p-5">
                 <div className="flex items-start gap-3">
@@ -109,12 +147,18 @@ export default function QuizRunner({
         </span>
         <span>{answered} answered</span>
       </div>
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-line">
-        <motion.div
-          className="h-full rounded-full bg-brand"
-          animate={{ width: `${((index + 1) / items.length) * 100}%` }}
-          transition={{ duration: 0.3, ease: EASE }}
-        />
+      <div className="mt-3 flex gap-1" role="group" aria-label="Jump to question">
+        {items.map((item, i) => (
+          <button
+            key={item.id}
+            onClick={() => setIndex(i)}
+            aria-label={`Question ${i + 1}${answers[item.id] !== undefined ? ', answered' : ''}`}
+            aria-current={i === index}
+            className={`h-2 flex-1 rounded-full transition-all ${
+              i === index ? 'bg-ink' : answers[item.id] !== undefined ? 'bg-brand/60 hover:bg-brand' : 'bg-line hover:bg-slate-300'
+            }`}
+          />
+        ))}
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -151,7 +195,7 @@ export default function QuizRunner({
       </AnimatePresence>
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <button onClick={() => setIndex(index - 1)} disabled={index === 0} className="btn disabled:opacity-40">
+        <button onClick={() => setIndex(index - 1)} disabled={index === 0} className="btn btn-ghost disabled:opacity-40">
           Back
         </button>
         {isLast ? (
@@ -166,6 +210,7 @@ export default function QuizRunner({
         )}
       </div>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      <p className="mt-4 hidden text-center text-[11px] text-slate-400 sm:block">Press A–D to answer, ← → to move</p>
     </div>
   )
 }
