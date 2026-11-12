@@ -1,6 +1,12 @@
 package practice
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/juanitoaldebaran/ur-career-backend/internal/practice/ai"
+)
 
 const graderSystem = `You are a strict but fair technical interviewer grading one answer.
 Score ONLY against the rubric: give each criterion an integer from 0 up to its max.
@@ -41,4 +47,40 @@ type Grade struct {
 
 type Grader interface {
 	Grade(ctx context.Context, q *Question, answer string) (*Grade, error)
+}
+
+type GeminiGrader struct {
+	g *ai.Gemini
+}
+
+var _ Grader = (*GeminiGrader)(nil)
+
+func NewGeminiGrader(g *ai.Gemini) *GeminiGrader {
+	return &GeminiGrader{
+		g: g,
+	}
+}
+
+func (gr *GeminiGrader) Grade(ctx context.Context, q *Question, answer string) (*Grade, error) {
+	rubric, err := json.Marshal(q.Rubric)
+	if err != nil {
+		return nil, err
+	}
+
+	prompt := fmt.Sprintf(
+		"<category>%s</category>\n<question>%s</question>\n<reference_answer>%s</reference_answer>\n<rubric>%s</rubric>\n<candidate_answer>%s</candidate_answer>",
+		q.Category, q.Prompt, q.ReferenceAnswer, rubric, answer,
+	)
+
+	raw, err := gr.g.GenerateJSON(ctx, graderSystem, prompt, graderSchema, 0.2)
+	if err != nil {
+		return nil, err
+	}
+
+	var grade Grade
+	if err := json.Unmarshal(raw, &grade); err != nil {
+		return nil, err
+	}
+
+	return &grade, nil
 }
