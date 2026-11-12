@@ -91,6 +91,12 @@ func main() {
 	quizHandler := practice.NewQuizHandler(practice.NewQuizService(practice.NewPgxQuizRepository(pool), practice.NewGeminiQuizGenerator(gemini)))
 	quizHandler.RegisterRoutes(mux, handler.Authenticate)
 
+	practiceRepo := practice.NewPgxRepository(pool)
+	practiceGrader := practice.NewGeminiGrader(gemini)
+	practiceService := practice.NewService(practiceRepo, practiceGrader)
+	practiceHandler := practice.NewHandler(practiceService)
+	practiceHandler.RegisterRoutes(mux, handler.Authenticate)
+
 	if len(os.Args) > 1 && os.Args[1] == "seed" {
 		if err := seed.NewPgxRepository(pool).Run(ctx); err != nil {
 			log.Fatalf("seed: %v", err)
