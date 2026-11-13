@@ -38,6 +38,7 @@ func NewHandler(service *Service) *Handler {
 func (h *Handler) RegisterRoutes(mux *http.ServeMux, authenticate func(http.Handler) http.Handler) {
 	mux.Handle("GET /profile", authenticate(http.HandlerFunc(h.GetProfile)))
 	mux.Handle("PATCH /profile", authenticate(http.HandlerFunc(h.UpdateProfile)))
+	mux.Handle("GET /profile/stats", authenticate(http.HandlerFunc(h.GetStats)))
 }
 
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +65,22 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		TargetRole:  profile.TargetRole,
 		UpdatedAt:   profile.UpdatedAt,
 	})
+}
+
+func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request) {
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		httpx.WriteError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	stats, err := h.service.GetStats(r.Context(), userID)
+	if err != nil {
+		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, stats)
 }
 
 func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {

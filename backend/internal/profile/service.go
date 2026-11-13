@@ -18,6 +18,12 @@ var (
 
 const maxFieldLength = 100
 
+type Stats struct {
+	Roadmaps []RoadmapProgress `json:"roadmaps"`
+	Quiz     QuizStats         `json:"quiz"`
+	Practice PracticeStats     `json:"practice"`
+}
+
 type Service struct {
 	repo Repository
 }
@@ -55,4 +61,23 @@ func (s *Service) UpdateProfile(ctx context.Context, userID uuid.UUID, fullName,
 
 func (s *Service) GetProfile(ctx context.Context, userID uuid.UUID) (*Profile, error) {
 	return s.repo.GetProfileByUserID(ctx, userID)
+}
+
+func (s *Service) GetStats(ctx context.Context, userID uuid.UUID) (*Stats, error) {
+	roadmaps, err := s.repo.ListRoadmapProgress(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	quiz, err := s.repo.GetQuizStats(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	practice, err := s.repo.GetPracticeStats(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Stats{Roadmaps: roadmaps, Quiz: quiz, Practice: practice}, nil
 }
