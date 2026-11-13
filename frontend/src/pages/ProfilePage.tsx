@@ -2,8 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
-import { ApiError, getProfile, updateProfile, type Profile } from '../lib/api'
+import { ApiError, getProfile, getProfileStats, updateProfile, type Profile, type ProfileStats } from '../lib/api'
 import Spinner from '../components/Spinner'
+import ScoreRing from '../components/ScoreRing'
 import { ROADMAP_TARGETS, findTargetRoadmap } from '../lib/targetRoadmap'
 import TextField from '../components/TextField'
 
@@ -31,6 +32,10 @@ export default function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [justSaved, setJustSaved] = useState(false)
 
+  const [stats, setStats] = useState<ProfileStats | null>(null)
+  const [statsLoaded, setStatsLoaded] = useState(false)
+  const [statsError, setStatsError] = useState<string | null>(null)
+
   useEffect(() => {
     if (!accessToken) return
     getProfile(accessToken)
@@ -40,6 +45,14 @@ export default function ProfilePage() {
         if (!(err instanceof ApiError && err.status === 404)) setLoadError('Could not load your profile.')
       })
       .finally(() => setLoaded(true))
+  }, [accessToken])
+
+  useEffect(() => {
+    if (!accessToken) return
+    getProfileStats(accessToken)
+      .then(setStats)
+      .catch(() => setStatsError('Could not load your progress.'))
+      .finally(() => setStatsLoaded(true))
   }, [accessToken])
 
   function startEditing() {
@@ -207,6 +220,95 @@ export default function ProfilePage() {
           </AnimatePresence>
         </motion.div>
       )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
+        className="mt-10"
+      >
+        <p className="eyebrow">Progress</p>
+        <h2 className="mt-2 text-2xl font-semibold">Your progress</h2>
+
+        {statsError && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statsError}</p>}
+        {!statsLoaded && <p className="mt-4 text-sm text-slate-400">Loading…</p>}
+
+        {statsLoaded && !statsError && stats && (
+          <div className="mt-6 flex flex-col gap-6">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="flex items-center gap-5 rounded-2xl border border-line bg-white p-6">
+                <ScoreRing score={stats.quiz.best_score} />
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Quiz best score</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {stats.quiz.total_taken > 0
+                      ? `${stats.quiz.total_taken} quiz${stats.quiz.total_taken === 1 ? '' : 'zes'} taken, averaging ${stats.quiz.average_score}`
+                      : 'No quizzes taken yet.'}
+                  </p>
+                  {stats.quiz.total_taken === 0 && (
+                    <Link to="/practice" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+                      Take a quiz →
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-5 rounded-2xl border border-line bg-white p-6">
+                <ScoreRing score={stats.practice.best_score} />
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Practice best score</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {stats.practice.total_attempts > 0
+                      ? `${stats.practice.total_attempts} attempt${stats.practice.total_attempts === 1 ? '' : 's'}, averaging ${stats.practice.average_score}`
+                      : 'No practice attempts yet.'}
+                  </p>
+                  {stats.practice.total_attempts === 0 && (
+                    <Link to="/practice" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+                      Start practicing →
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-white p-6">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Roadmap progress</p>
+              {stats.roadmaps.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500">
+                  You haven&apos;t started a roadmap yet.{' '}
+                  <Link to="/roadmap" className="font-medium text-brand hover:underline">
+                    Explore roadmaps →
+                  </Link>
+                </p>
+              ) : (
+                <div className="mt-4 flex flex-col gap-4">
+                  {stats.roadmaps.map((r) => {
+                    const percent = r.total_nodes > 0 ? Math.round((r.done_nodes / r.total_nodes) * 100) : 0
+                    return (
+                      <Link key={r.slug} to={`/roadmap/${r.slug}`} className="group block">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-ink group-hover:text-brand">{r.title}</span>
+                          <span className="font-mono text-xs text-slate-400">
+                            {r.done_nodes} / {r.total_nodes}
+                          </span>
+                        </div>
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percent}%` }}
+                            transition={{ duration: 0.8, ease: EASE }}
+                            className="h-full rounded-full bg-brand"
+                          />
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </motion.div>
     </div>
   )
 }

@@ -29,6 +29,25 @@ type Skills struct {
 	Proficiency string    `json:"proficiency"`
 }
 
+type RoadmapProgress struct {
+	Slug       string `json:"slug"`
+	Title      string `json:"title"`
+	TotalNodes int    `json:"total_nodes"`
+	DoneNodes  int    `json:"done_nodes"`
+}
+
+type QuizStats struct {
+	TotalTaken   int `json:"total_taken"`
+	BestScore    int `json:"best_score"`
+	AverageScore int `json:"average_score"`
+}
+
+type PracticeStats struct {
+	TotalAttempts int `json:"total_attempts"`
+	BestScore     int `json:"best_score"`
+	AverageScore  int `json:"average_score"`
+}
+
 type PgxRepository struct {
 	db *pgxpool.Pool
 }
@@ -37,6 +56,9 @@ type Repository interface {
 	GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*Profile, error)
 	ListSkills(ctx context.Context, profileID uuid.UUID) ([]Skills, error)
 	UpsertProfile(ctx context.Context, userID uuid.UUID, fullName, currentRole, targetRole string, constraints []byte) (*Profile, error)
+	ListRoadmapProgress(ctx context.Context, userID uuid.UUID) ([]RoadmapProgress, error)
+	GetQuizStats(ctx context.Context, userID uuid.UUID) (QuizStats, error)
+	GetPracticeStats(ctx context.Context, userID uuid.UUID) (PracticeStats, error)
 }
 
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
@@ -123,4 +145,65 @@ func (r *PgxRepository) UpsertProfile(ctx context.Context, userID uuid.UUID, ful
 	}
 
 	return &profile, nil
+}
+
+func (r *PgxRepository) ListRoadmapProgress(ctx context.Context, userID uuid.UUID) ([]RoadmapProgress, error) {
+	const query = `
+	SELECT r.slug, r.title, COUNT(n.id), COUNT(n.id) FILTER (WHERE p.status_roadmap = 'done')
+	FROM roadmaps r
+	JOIN roadmap_nodes n ON n.roadmap_id = r.id
+	LEFT JOIN user_roadmap_progress p ON p.node_id = n.id AND p.user_id = $1
+	GROUP BY r.id, r.slug, r.title
+	HAVING COUNT(p.user_id) > 0
+	ORDER BY r.title
+	`
+
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	progress := make([]RoadmapProgress, 0)
+	for rows.Next() {
+		var p RoadmapProgress
+		if err := rows.Scan(&p.Slug, &p.Title, &p.TotalNodes, &p.DoneNodes); err != nil {
+			return nil, err
+		}
+		progress = append(progress, p)
+	}
+
+	return progress, rows.Err()
+}
+
+func (r *PgxRepository) GetQuizStats(ctx context.Context, userID uuid.UUID) (QuizStats, error) {
+	const query = `
+	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(AVG(score), 0)
+	FROM quizzes
+	WHERE user_id = $1 AND submitted_at IS NOT NULL
+	`
+
+	var stats QuizStats
+	err := r.db.QueryRow(ctx, query, userID).Scan(&stats.TotalTaken, &stats.BestScore, &stats.AverageScore)
+	if err != nil {
+		return QuizStats{}, err
+	}
+
+	return stats, nil
+}
+
+func (r *PgxRepository) GetPracticeStats(ctx context.Context, userID uuid.UUID) (PracticeStats, error) {
+	const query = `
+	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(AVG(score), 0)
+	FROM practice_attempts
+	WHERE user_id = $1
+	`
+
+	var stats PracticeStats
+	err := r.db.QueryRow(ctx, query, userID).Scan(&stats.TotalAttempts, &stats.BestScore, &stats.AverageScore)
+	if err != nil {
+		return PracticeStats{}, err
+	}
+
+	return stats, nil
 }

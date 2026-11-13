@@ -126,6 +126,37 @@ export function updateProfile(input: ProfileInput, accessToken: string): Promise
   })
 }
 
+export interface RoadmapProgressStats {
+  slug: string
+  title: string
+  total_nodes: number
+  done_nodes: number
+}
+
+export interface QuizStats {
+  total_taken: number
+  best_score: number
+  average_score: number
+}
+
+export interface PracticeStats {
+  total_attempts: number
+  best_score: number
+  average_score: number
+}
+
+export interface ProfileStats {
+  roadmaps: RoadmapProgressStats[]
+  quiz: QuizStats
+  practice: PracticeStats
+}
+
+export function getProfileStats(accessToken: string): Promise<ProfileStats> {
+  return request('/profile/stats', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
 export function listRoadmaps(accessToken: string): Promise<RoadmapSummary[]> {
   return request('/roadmaps', {
     headers: { Authorization: `Bearer ${accessToken}` },
