@@ -311,11 +311,7 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
   const fullText = username ? `${GREETING_PREFIX}${username}` : ''
 
   return (
-    <div className="relative -mt-24 pt-24">
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 h-[calc(70svh+260px)] bg-gradient-to-b from-blue-50 via-sky-50/70 to-white"
-      />
+    <div className="-mt-24 pt-24">
       <Hero
         headline={
           guest ? (
@@ -361,8 +357,8 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
       {guest && <CareerExplorer />}
       <HowItWorks />
       <WhySection />
-      {guest && <StatsBand />}
-      {guest && <Faq />}
+      <StatsBand />
+      <Faq />
       <CtaBanner guest={guest} />
       <HomeFooter />
     </div>
