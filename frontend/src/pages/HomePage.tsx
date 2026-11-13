@@ -135,12 +135,16 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
           style={{ background: spotlight }}
           className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-blue-600 transition-transform duration-300 group-hover:scale-x-100"
+        />
         <Link to={feature.to} className="relative flex h-full flex-col gap-4 p-6">
           <div className="flex items-center justify-between">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white transition-colors duration-300 group-hover:bg-blue-600">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-600 group-hover:shadow-blue-600/30">
               {feature.icon}
             </span>
-            <span className="text-xs font-medium tabular-nums text-slate-300">
+            <span className="text-xs font-medium tabular-nums text-slate-300 transition-colors duration-300 group-hover:text-blue-300">
               0{index + 1}
             </span>
           </div>
@@ -233,7 +237,7 @@ function Hero({ headline, primary, secondary }: HeroProps) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm backdrop-blur"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur"
         >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-60" />
@@ -242,9 +246,16 @@ function Hero({ headline, primary, secondary }: HeroProps) {
           Your AI Tech Career Coach
         </motion.span>
 
-        <h1 className="mt-6 min-h-[1.2em] text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+        <h1 className="mt-6 min-h-[1.2em] text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl">
           {headline}
         </h1>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
+          className="mx-auto mt-5 h-px w-10 rounded-full bg-slate-900/15"
+        />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -264,15 +275,26 @@ function Hero({ headline, primary, secondary }: HeroProps) {
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
             <Link
               to={primary.to}
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-colors hover:bg-blue-600"
+              className="group inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-colors hover:bg-blue-600"
             >
               {primary.label}
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </Link>
           </motion.div>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
             <Link
               to={secondary.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-900 transition-colors hover:border-blue-300 hover:text-blue-600"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:border-blue-300 hover:text-blue-600"
             >
               {secondary.label}
             </Link>
@@ -289,7 +311,11 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
   const fullText = username ? `${GREETING_PREFIX}${username}` : ''
 
   return (
-    <div className="-mt-24 pt-24">
+    <div className="relative -mt-24 pt-24">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 -z-10 h-[calc(70svh+260px)] bg-gradient-to-b from-blue-50 via-sky-50/70 to-white"
+      />
       <Hero
         headline={
           guest ? (

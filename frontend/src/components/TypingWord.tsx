@@ -23,7 +23,7 @@ export default function TypingWord({
       {plain}
       {highlightFrom !== undefined && <span className={highlightClassName}>{highlighted}</span>}
       <span
-        className="-mb-1 ml-0.5 inline-block h-5 w-px animate-pulse bg-slate-900"
+        className="ml-1 inline-block h-[0.85em] w-[3px] translate-y-[0.08em] animate-caret-blink rounded-full bg-blue-600 align-middle"
         aria-hidden="true"
       />
     </>
