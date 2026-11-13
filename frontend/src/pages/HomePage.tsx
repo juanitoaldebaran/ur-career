@@ -189,47 +189,16 @@ interface HeroProps {
 
 function Hero({ headline, primary, secondary }: HeroProps) {
   const reduce = useReducedMotion()
-  const mx = useMotionValue(0)
-  const my = useMotionValue(0)
-  const sx = useSpring(mx, { stiffness: 60, damping: 20 })
-  const sy = useSpring(my, { stiffness: 60, damping: 20 })
-  const orbAx = useTransform(sx, (v) => v * -0.04)
-  const orbAy = useTransform(sy, (v) => v * -0.04)
-  const orbBx = useTransform(sx, (v) => v * 0.06)
-  const orbBy = useTransform(sy, (v) => v * 0.06)
 
   const { scrollY } = useScroll()
   const fade = useTransform(scrollY, [0, 400], [1, 0])
   const lift = useTransform(scrollY, [0, 400], [0, -40])
 
-  function handleMove(event: MouseEvent<HTMLElement>) {
-    const rect = event.currentTarget.getBoundingClientRect()
-    mx.set(event.clientX - rect.left - rect.width / 2)
-    my.set(event.clientY - rect.top - rect.height / 2)
-  }
-
   return (
-    <section
-      onMouseMove={reduce ? undefined : handleMove}
-      className="relative isolate flex min-h-[70svh] flex-col items-center justify-center overflow-hidden px-4 text-center"
-    >
+    <section className="relative isolate flex min-h-[70svh] flex-col items-center justify-center overflow-hidden bg-white px-4 text-center">
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 [background-image:linear-gradient(to_right,rgba(15,23,42,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.05)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
-      />
-      <motion.div
-        aria-hidden="true"
-        style={{ x: orbAx, y: orbAy }}
-        className="absolute -left-24 top-10 -z-10 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl"
-        animate={reduce ? undefined : { scale: [1, 1.15, 1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        aria-hidden="true"
-        style={{ x: orbBx, y: orbBy }}
-        className="absolute -right-24 bottom-0 -z-10 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl"
-        animate={reduce ? undefined : { scale: [1.1, 0.95, 1.1] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       <motion.div style={reduce ? undefined : { opacity: fade, y: lift }}>
