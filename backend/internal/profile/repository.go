@@ -178,7 +178,7 @@ func (r *PgxRepository) ListRoadmapProgress(ctx context.Context, userID uuid.UUI
 
 func (r *PgxRepository) GetQuizStats(ctx context.Context, userID uuid.UUID) (QuizStats, error) {
 	const query = `
-	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(AVG(score), 0)
+	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(ROUND(AVG(score)), 0)::int
 	FROM quizzes
 	WHERE user_id = $1 AND submitted_at IS NOT NULL
 	`
@@ -194,7 +194,7 @@ func (r *PgxRepository) GetQuizStats(ctx context.Context, userID uuid.UUID) (Qui
 
 func (r *PgxRepository) GetPracticeStats(ctx context.Context, userID uuid.UUID) (PracticeStats, error) {
 	const query = `
-	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(AVG(score), 0)
+	SELECT COUNT(*), COALESCE(MAX(score), 0), COALESCE(ROUND(AVG(score)), 0)::int
 	FROM practice_attempts
 	WHERE user_id = $1
 	`
