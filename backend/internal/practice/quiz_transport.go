@@ -75,7 +75,8 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.Submit(r.Context(), userID, quizID, req.Answer)
+	var tz string
+	result, err := h.service.Submit(r.Context(), userID, quizID, req.Answer, tz)
 
 	switch {
 	case err == nil:

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -23,17 +24,20 @@ type QuizResult struct {
 	Correct int              `json:"correct"`
 	Total   int              `json:"total"`
 	Review  []QuizReviewItem `json:"review"`
+	Streak  *Streak          `json:"streak"`
 }
 
 type QuizService struct {
-	repo QuizRepository
-	gen  QuizGenerator
+	repo    QuizRepository
+	gen     QuizGenerator
+	streaks StreakRepository
 }
 
-func NewQuizService(repo QuizRepository, gen QuizGenerator) *QuizService {
+func NewQuizService(repo QuizRepository, gen QuizGenerator, streaks StreakRepository) *QuizService {
 	return &QuizService{
-		repo: repo,
-		gen:  gen,
+		repo:    repo,
+		gen:     gen,
+		streaks: streaks,
 	}
 }
 
@@ -67,7 +71,7 @@ func (s *QuizService) Create(ctx context.Context, userID uuid.UUID, role string)
 	return s.repo.CreateQuiz(ctx, userID, role, questions)
 }
 
-func (s *QuizService) Submit(ctx context.Context, userID, quizUID uuid.UUID, answers map[string]int) (*QuizResult, error) {
+func (s *QuizService) Submit(ctx context.Context, userID, quizUID uuid.UUID, answers map[string]int, tz string) (*QuizResult, error) {
 	storedQuestions, err := s.repo.LoadForGrading(ctx, quizUID, userID)
 	if err != nil {
 		return nil, err
@@ -104,6 +108,15 @@ func (s *QuizService) Submit(ctx context.Context, userID, quizUID uuid.UUID, ans
 
 	if err := s.repo.SaveResult(ctx, quizUID, clean, result.Score); err != nil {
 		return nil, err
+	}
+
+	if len(clean) > 0 {
+		streak, err := s.streaks.Record(ctx, userID, localDate(tz, time.Now()))
+		if err != nil {
+			log.Printf("Streak record: %v", err)
+		} else {
+			result.Streak = &streak
+		}
 	}
 
 	return result, nil
