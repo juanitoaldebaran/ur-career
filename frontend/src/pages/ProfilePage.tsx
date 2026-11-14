@@ -171,14 +171,14 @@ export default function ProfilePage() {
                   <Field label="Email" value={user.email} placeholder="" />
                 </div>
 
-                <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                  <div className="flex-1 rounded-xl border border-line p-4">
+                <div className="mt-6 flex items-center gap-4 border-t border-line pt-6">
+                  <div className="flex-1">
                     <Field label="Current job" value={profile?.current_role} placeholder="Not set" />
                   </div>
-                  <span className="hidden text-slate-300 sm:block" aria-hidden="true">
-                    →
-                  </span>
-                  <div className="flex-1 rounded-xl border border-brand/30 bg-brand-soft p-4">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                  <div className="flex-1">
                     <Field label="Target job" value={profile?.target_role} placeholder="Not set" />
                   </div>
                 </div>
@@ -192,27 +192,27 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.1, ease: EASE }}
-                    className="mt-6 rounded-xl bg-ink p-5 text-white"
+                    className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5"
                   >
-                    {justSaved && <p className="mb-2 font-mono text-[10px] uppercase tracking-wider text-blue-300">Profile saved</p>}
-                    {targetRoadmap ? (
-                      <>
-                        <p className="text-sm text-slate-300">Your path to {profile?.target_role}</p>
-                        <p className="mt-1 font-display text-lg font-semibold">{targetRoadmap.title} roadmap</p>
-                        <Link to={`/roadmap/${targetRoadmap.slug}`} className="btn mt-4 bg-white !py-2 text-ink hover:bg-brand-soft">
-                          Go to my target roadmap →
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-sm text-slate-300">
-                          We don&apos;t have a roadmap for &ldquo;{profile?.target_role}&rdquo; yet.
+                    <div>
+                      {justSaved && <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-brand">Profile saved</p>}
+                      {targetRoadmap ? (
+                        <>
+                          <p className="text-sm text-slate-500">Your path to {profile?.target_role}</p>
+                          <p className="mt-0.5 font-medium text-ink">{targetRoadmap.title} roadmap</p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-slate-500">
+                          No roadmap yet for &ldquo;{profile?.target_role}&rdquo;.
                         </p>
-                        <Link to="/roadmap" className="btn mt-4 bg-white !py-2 text-ink hover:bg-brand-soft">
-                          Browse all roadmaps →
-                        </Link>
-                      </>
-                    )}
+                      )}
+                    </div>
+                    <Link
+                      to={targetRoadmap ? `/roadmap/${targetRoadmap.slug}` : '/roadmap'}
+                      className="shrink-0 text-sm font-medium text-brand hover:underline"
+                    >
+                      {targetRoadmap ? 'Go to roadmap' : 'Browse roadmaps'} →
+                    </Link>
                   </motion.div>
                 )}
               </motion.div>
@@ -228,42 +228,30 @@ export default function ProfilePage() {
         className="mt-10"
       >
         <p className="eyebrow">Progress</p>
-        <h2 className="mt-2 text-2xl font-semibold">Your progress</h2>
+        <h2 className="mt-2 text-2xl font-semibold">How you&apos;re doing</h2>
 
         {statsError && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statsError}</p>}
         {!statsLoaded && <p className="mt-4 text-sm text-slate-400">Loading…</p>}
 
         {statsLoaded && !statsError && stats && (
-          <div className="mt-6 flex flex-col gap-6">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="flex items-center gap-5 rounded-2xl border border-line bg-white p-6">
-                <ScoreRing score={stats.quiz.best_score} />
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Quiz best score</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {stats.quiz.total_taken > 0
-                      ? `${stats.quiz.total_taken} quiz${stats.quiz.total_taken === 1 ? '' : 'zes'} taken, averaging ${stats.quiz.average_score}`
-                      : 'No quizzes taken yet.'}
-                  </p>
+          <div className="mt-6 flex flex-col gap-8">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Best score</p>
+              <div className="mt-3 grid grid-cols-2 divide-x divide-line overflow-hidden rounded-2xl border border-line bg-white">
+                <div className="flex flex-col items-center gap-3 p-6 text-center">
+                  <ScoreRing score={stats.quiz.best_score} />
+                  <p className="text-sm font-medium text-ink">Quiz</p>
                   {stats.quiz.total_taken === 0 && (
-                    <Link to="/practice" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+                    <Link to="/practice" className="text-sm font-medium text-brand hover:underline">
                       Take a quiz →
                     </Link>
                   )}
                 </div>
-              </div>
-
-              <div className="flex items-center gap-5 rounded-2xl border border-line bg-white p-6">
-                <ScoreRing score={stats.practice.best_score} />
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Practice best score</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {stats.practice.total_attempts > 0
-                      ? `${stats.practice.total_attempts} attempt${stats.practice.total_attempts === 1 ? '' : 's'}, averaging ${stats.practice.average_score}`
-                      : 'No practice attempts yet.'}
-                  </p>
+                <div className="flex flex-col items-center gap-3 p-6 text-center">
+                  <ScoreRing score={stats.practice.best_score} />
+                  <p className="text-sm font-medium text-ink">Practice</p>
                   {stats.practice.total_attempts === 0 && (
-                    <Link to="/practice" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+                    <Link to="/practice" className="text-sm font-medium text-brand hover:underline">
                       Start practicing →
                     </Link>
                   )}
@@ -271,40 +259,62 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-line bg-white p-6">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Roadmap progress</p>
-              {stats.roadmaps.length === 0 ? (
-                <p className="mt-3 text-sm text-slate-500">
-                  You haven&apos;t started a roadmap yet.{' '}
-                  <Link to="/roadmap" className="font-medium text-brand hover:underline">
-                    Explore roadmaps →
-                  </Link>
-                </p>
-              ) : (
-                <div className="mt-4 flex flex-col gap-4">
-                  {stats.roadmaps.map((r) => {
-                    const percent = r.total_nodes > 0 ? Math.round((r.done_nodes / r.total_nodes) * 100) : 0
-                    return (
-                      <Link key={r.slug} to={`/roadmap/${r.slug}`} className="group block">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium text-ink group-hover:text-brand">{r.title}</span>
-                          <span className="font-mono text-xs text-slate-400">
-                            {r.done_nodes} / {r.total_nodes}
-                          </span>
-                        </div>
-                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${percent}%` }}
-                            transition={{ duration: 0.8, ease: EASE }}
-                            className="h-full rounded-full bg-brand"
-                          />
-                        </div>
-                      </Link>
-                    )
-                  })}
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Average score</p>
+              <div className="mt-3 grid grid-cols-2 divide-x divide-line overflow-hidden rounded-2xl border border-line bg-white">
+                <div className="p-6 text-center">
+                  <p className="font-display text-3xl font-semibold text-ink">
+                    {stats.quiz.total_taken > 0 ? stats.quiz.average_score : '—'}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Quiz · {stats.quiz.total_taken} taken
+                  </p>
                 </div>
-              )}
+                <div className="p-6 text-center">
+                  <p className="font-display text-3xl font-semibold text-ink">
+                    {stats.practice.total_attempts > 0 ? stats.practice.average_score : '—'}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Practice · {stats.practice.total_attempts} attempts
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Roadmap progress</p>
+              <div className="mt-3 rounded-2xl border border-line bg-white p-6">
+                {stats.roadmaps.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    No roadmap started yet.{' '}
+                    <Link to="/roadmap" className="font-medium text-brand hover:underline">
+                      Explore roadmaps →
+                    </Link>
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {stats.roadmaps.map((r) => {
+                      const percent = r.total_nodes > 0 ? Math.round((r.done_nodes / r.total_nodes) * 100) : 0
+                      return (
+                        <Link key={r.slug} to={`/roadmap/${r.slug}`} className="group block">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-ink group-hover:text-brand">{r.title}</span>
+                            <span className="font-mono text-xs text-slate-400">{percent}%</span>
+                          </div>
+                          <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${percent}%` }}
+                              transition={{ duration: 0.8, ease: EASE }}
+                              className="h-full rounded-full bg-ink"
+                            />
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
