@@ -5,6 +5,8 @@ import { ApiError, submitQuiz, type QuizSession, type QuizResult } from '../lib/
 import ScoreRing from './ScoreRing'
 import { scoreTone } from '../lib/scoreTone'
 import Spinner from './Spinner'
+import StreakRow from './StreakRow'
+import StreakModal from './StreakModal'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const LETTERS = ['A', 'B', 'C', 'D', 'E']
@@ -24,6 +26,7 @@ export default function QuizRunner({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [onlyWrong, setOnlyWrong] = useState(false)
+  const [showStreak, setShowStreak] = useState(false)
 
   const current = items[index]
   const answered = Object.keys(answers).length
@@ -34,7 +37,10 @@ export default function QuizRunner({
     setSubmitting(true)
     setError(null)
     try {
-      setResult(await submitQuiz(session.id, answers, accessToken))
+      const res = await submitQuiz(session.id, answers, accessToken)
+      setResult(res)
+      // Celebrate only the first quiz of the day; repeat quizzes just show the row.
+      if (res.streak?.is_new_day) setShowStreak(true)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not submit the quiz. Please try again.')
     } finally {
@@ -76,6 +82,11 @@ export default function QuizRunner({
             New quiz
           </button>
         </div>
+
+        {result.streak && <StreakRow streak={result.streak} />}
+        {result.streak && (
+          <StreakModal streak={result.streak} open={showStreak} onClose={() => setShowStreak(false)} />
+        )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
