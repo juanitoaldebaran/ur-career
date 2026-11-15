@@ -249,11 +249,18 @@ export interface QuizReviewItem {
   explanation: string
 }
 
+export interface Streak {
+  current: number
+  longest: number
+  is_new_day: boolean
+}
+
 export interface QuizResult {
   score: number
   correct: number
   total: number
   review: QuizReviewItem[]
+  streak: Streak | null
 }
 
 export function createQuiz(role: string, accessToken: string): Promise<QuizSession> {
@@ -272,6 +279,9 @@ export function submitQuiz(
   return request(`/practice/quizzes/${quizId}/submit`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({
+      answers,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
   })
 }
