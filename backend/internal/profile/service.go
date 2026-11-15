@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -22,6 +23,7 @@ type Stats struct {
 	Roadmaps []RoadmapProgress `json:"roadmaps"`
 	Quiz     QuizStats         `json:"quiz"`
 	Practice PracticeStats     `json:"practice"`
+	Streak   StreakStats       `json:"streak"`
 }
 
 type Service struct {
@@ -63,7 +65,17 @@ func (s *Service) GetProfile(ctx context.Context, userID uuid.UUID) (*Profile, e
 	return s.repo.GetProfileByUserID(ctx, userID)
 }
 
-func (s *Service) GetStats(ctx context.Context, userID uuid.UUID) (*Stats, error) {
+func localDate(tz string, now time.Time) time.Time {
+	local, err := time.LoadLocation(tz)
+	// unknown or empty timezone: fall back to UTC
+	if err != nil {
+		local = time.UTC
+	}
+	year, month, day := now.In(local).Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+}
+
+func (s *Service) GetStats(ctx context.Context, userID uuid.UUID, tz string) (*Stats, error) {
 	roadmaps, err := s.repo.ListRoadmapProgress(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -79,5 +91,10 @@ func (s *Service) GetStats(ctx context.Context, userID uuid.UUID) (*Stats, error
 		return nil, err
 	}
 
-	return &Stats{Roadmaps: roadmaps, Quiz: quiz, Practice: practice}, nil
+	streak, err := s.repo.GetStreakStats(ctx, userID, localDate(tz, time.Now()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Stats{Roadmaps: roadmaps, Quiz: quiz, Practice: practice, Streak: streak}, nil
 }

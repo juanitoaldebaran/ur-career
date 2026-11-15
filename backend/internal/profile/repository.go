@@ -48,6 +48,12 @@ type PracticeStats struct {
 	AverageScore  int `json:"average_score"`
 }
 
+type StreakStats struct {
+	Current     int  `json:"current"`
+	Longest     int  `json:"longest"`
+	ActiveToday bool `json:"active_today"`
+}
+
 type PgxRepository struct {
 	db *pgxpool.Pool
 }
@@ -59,6 +65,7 @@ type Repository interface {
 	ListRoadmapProgress(ctx context.Context, userID uuid.UUID) ([]RoadmapProgress, error)
 	GetQuizStats(ctx context.Context, userID uuid.UUID) (QuizStats, error)
 	GetPracticeStats(ctx context.Context, userID uuid.UUID) (PracticeStats, error)
+	GetStreakStats(ctx context.Context, userID uuid.UUID, today time.Time) (StreakStats, error)
 }
 
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
@@ -90,6 +97,28 @@ func (r *PgxRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID
 	}
 
 	return &profile, nil
+}
+
+func (r *PgxRepository) GetStreakStats(ctx context.Context, userID uuid.UUID, today time.Time) (StreakStats, error) {
+	const query = `
+	SELECT
+		CASE WHEN last_activity_date >= $2::date - 1 THEN current_streak ELSE 0 END,
+		longest_streak,
+		COALESCE(last_activity_date = $2::date, false)
+	FROM user_streaks
+	WHERE user_id = $1
+	`
+
+	var streaks StreakStats
+	err := r.db.QueryRow(ctx, query, userID, today).Scan(&streaks.Current, &streaks.Longest, &streaks.ActiveToday)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return StreakStats{}, nil
+	}
+	if err != nil {
+		return StreakStats{}, err
+	}
+
+	return streaks, nil
 }
 
 func (r *PgxRepository) ListSkills(ctx context.Context, profileID uuid.UUID) ([]Skills, error) {
