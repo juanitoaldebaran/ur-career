@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS user_streaks (
     current_streak INT NOT NULL DEFAULT 0,
     longest_streak INT NOT NULL DEFAULT 0,
     last_activity_date DATE,
-    updated_at TIMESTAMPZ NOT NULL DEFAULT now()
-)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
