@@ -66,7 +66,8 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Answer map[string]int `json:"answers"`
+		Answer   map[string]int `json:"answers"`
+		Timezone string         `json:"timezone"`
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 8<<10)
@@ -75,8 +76,7 @@ func (h *QuizHandler) Submit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tz string
-	result, err := h.service.Submit(r.Context(), userID, quizID, req.Answer, tz)
+	result, err := h.service.Submit(r.Context(), userID, quizID, req.Answer, req.Timezone)
 
 	switch {
 	case err == nil:

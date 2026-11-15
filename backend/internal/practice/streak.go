@@ -30,7 +30,7 @@ func NewPgxStreakRepository(db *pgxpool.Pool) *PgxStreakRepository {
 
 func localDate(tz string, now time.Time) time.Time {
 	local, err := time.LoadLocation(tz)
-	/// if failed use local date
+	// unknown or empty timezone: fall back to UTC
 	if err != nil {
 		local = time.UTC
 	}
@@ -63,7 +63,7 @@ func advance(current, longest int, last *time.Time, today time.Time) Streak {
 func (r *PgxStreakRepository) Record(ctx context.Context, userID uuid.UUID, today time.Time) (Streak, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		return Streak{}, nil
+		return Streak{}, err
 	}
 	defer tx.Rollback(ctx)
 
@@ -76,15 +76,15 @@ func (r *PgxStreakRepository) Record(ctx context.Context, userID uuid.UUID, toda
 	if err := tx.QueryRow(ctx,
 		`SELECT current_streak, longest_streak, last_activity_date
 		 FROM user_streaks WHERE user_id = $1 FOR UPDATE
-		`, userID).Scan(&curr, &longest); err != nil {
-		return Streak{}, nil
+		`, userID).Scan(&curr, &longest, &last); err != nil {
+		return Streak{}, err
 	}
 
 	next := advance(curr, longest, last, today)
 	if next.IsNewDay {
-		if _, err := tx.Exec(ctx, `UPDATE user_streaks SET current_streak = $2, longest_streak = $3, last_activity_date = $4, updated_at = now() WHERE user_id = $1)`,
+		if _, err := tx.Exec(ctx, `UPDATE user_streaks SET current_streak = $2, longest_streak = $3, last_activity_date = $4, updated_at = now() WHERE user_id = $1`,
 			userID, next.Current, next.Longest, today); err != nil {
-			return Streak{}, nil
+			return Streak{}, err
 		}
 	}
 

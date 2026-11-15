@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -88,7 +89,7 @@ func main() {
 	}
 
 	gemini := ai.NewGemini(os.Getenv("GEMINI_API_KEY"), os.Getenv("GEMINI_MODEL"))
-	quizHandler := practice.NewQuizHandler(practice.NewQuizService(practice.NewPgxQuizRepository(pool), practice.NewGeminiQuizGenerator(gemini)))
+	quizHandler := practice.NewQuizHandler(practice.NewQuizService(practice.NewPgxQuizRepository(pool), practice.NewGeminiQuizGenerator(gemini), practice.NewPgxStreakRepository(pool)))
 	quizHandler.RegisterRoutes(mux, handler.Authenticate)
 
 	practiceRepo := practice.NewPgxRepository(pool)
