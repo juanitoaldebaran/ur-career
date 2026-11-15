@@ -74,7 +74,7 @@ func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, err := h.service.GetStats(r.Context(), userID)
+	stats, err := h.service.GetStats(r.Context(), userID, r.URL.Query().Get("tz"))
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
