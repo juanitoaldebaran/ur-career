@@ -117,7 +117,7 @@ export default function RoadmapsPage() {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement
       const typing = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
-      if (event.key === '/' && !typing) {
+      if (event.shiftKey && event.code === 'Space' && !typing) {
         event.preventDefault()
         inputRef.current?.focus()
       }
@@ -128,6 +128,7 @@ export default function RoadmapsPage() {
 
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
         <p className="eyebrow">Roadmaps</p>
         <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">
@@ -138,10 +139,10 @@ export default function RoadmapsPage() {
         </p>
       </motion.div>
 
-      <div className="relative mt-6 max-w-md">
+      <div className="relative w-full shrink-0 sm:w-60">
         <svg
           viewBox="0 0 24 24"
-          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -157,9 +158,10 @@ export default function RoadmapsPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === 'Escape' && setQuery('')}
-          placeholder="Search roadmaps or skills…"
+          placeholder="Search roadmaps…"
           aria-label="Search roadmaps"
-          className="w-full rounded-xl border border-line bg-white py-2.5 pl-10 pr-16 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10 [&::-webkit-search-cancel-button]:hidden"
+          aria-keyshortcuts="Shift+Space"
+          className="w-full rounded-lg border border-line bg-white py-2 pl-9 pr-[4.5rem] text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10 [&::-webkit-search-cancel-button]:hidden"
         />
         <AnimatePresence mode="wait" initial={false}>
           {query ? (
@@ -181,18 +183,29 @@ export default function RoadmapsPage() {
               </svg>
             </motion.button>
           ) : (
-            <motion.kbd
+            <motion.span
               key="hint"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
-              className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-xs text-slate-400 sm:block"
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-1 sm:flex"
             >
-              /
-            </motion.kbd>
+              <kbd className="flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500">
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 4 4 12h4.5v7h7v-7H20z" />
+                </svg>
+              </kbd>
+              <kbd className="flex h-5 w-7 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500">
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 10v6h16v-6" />
+                </svg>
+              </kbd>
+            </motion.span>
           )}
         </AnimatePresence>
+      </div>
       </div>
       {roadmaps && query.trim() && (
         <p className="mt-2 text-xs text-slate-400" aria-live="polite">
