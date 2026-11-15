@@ -175,9 +175,6 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <Field label="Current job" value={profile?.current_role} placeholder="Not set" />
                   </div>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
                   <div className="flex-1">
                     <Field label="Target job" value={profile?.target_role} placeholder="Not set" />
                   </div>
@@ -316,6 +313,54 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
+        className="mt-12"
+      >
+        <p className="eyebrow">Streak</p>
+        <h2 className="mt-2 text-2xl font-semibold">Showing up daily</h2>
+
+        {statsLoaded && !statsError && stats && (
+          <div className="mt-6">
+            <div className="grid grid-cols-2 divide-x divide-line overflow-hidden rounded-2xl border border-line bg-white">
+              <div className="p-6 text-center">
+                <p className="font-display text-3xl font-semibold text-brand">
+                  {stats.streak.current} <span className="text-base font-medium text-ink">{stats.streak.current === 1 ? 'day' : 'days'}</span>
+                </p>
+                <p className="mt-1 text-sm text-slate-500">Current streak</p>
+              </div>
+              <div className="p-6 text-center">
+                <p className="font-display text-3xl font-semibold text-ink">
+                  {stats.streak.longest} <span className="text-base font-medium">{stats.streak.longest === 1 ? 'day' : 'days'}</span>
+                </p>
+                <p className="mt-1 text-sm text-slate-500">Best streak</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-slate-500">
+              {stats.streak.longest === 0 ? (
+                <>
+                  No streak yet.{' '}
+                  <Link to="/practice" className="font-medium text-brand hover:underline">
+                    Take a quiz to start one →
+                  </Link>
+                </>
+              ) : stats.streak.active_today ? (
+                'Counted today. Come back tomorrow to keep it going.'
+              ) : (
+                <>
+                  Not counted today yet.{' '}
+                  <Link to="/practice" className="font-medium text-brand hover:underline">
+                    Take a quiz →
+                  </Link>
+                </>
+              )}
+            </p>
           </div>
         )}
       </motion.div>

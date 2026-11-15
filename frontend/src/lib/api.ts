@@ -145,14 +145,22 @@ export interface PracticeStats {
   average_score: number
 }
 
+export interface StreakStats {
+  current: number
+  longest: number
+  active_today: boolean
+}
+
 export interface ProfileStats {
   roadmaps: RoadmapProgressStats[]
   quiz: QuizStats
   practice: PracticeStats
+  streak: StreakStats
 }
 
 export function getProfileStats(accessToken: string): Promise<ProfileStats> {
-  return request('/profile/stats', {
+  const tz = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  return request(`/profile/stats?tz=${tz}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 }
