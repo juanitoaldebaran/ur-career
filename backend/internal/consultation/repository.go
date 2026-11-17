@@ -14,6 +14,7 @@ var (
 	ErrConversationError    = errors.New("conversation not found")
 	ErrConversationNotError = errors.New("conversation not error")
 	ErrBusy                 = errors.New("a reply is already being generated")
+	ErrConversationNotFound = errors.New("error conversation not found")
 )
 
 const defaultTitle = "New chat"
@@ -107,4 +108,25 @@ func (r *PgxRepository) DeleteConversation(ctx context.Context, userID uuid.UUID
 	}
 
 	return nil
+}
+
+func (r *PgxRepository) SetTitle(ctx context.Context, id uuid.UUID, title string) error {
+	_, err := r.db.Exec(ctx, `UPDATE conversations SET title = $2 WHERE id = $1`, id, title)
+	return err
+}
+
+func (r *PgxRepository) GetConversation(ctx context.Context, userID, id uuid.UUID) (*Conversation, error) {
+	const query = `SELECT id, title, created_at, updated_at
+	FROM conversations
+	WHERE id = $1 AND user_id = $2`
+
+	var c Conversation
+	err := r.db.QueryRow(ctx, query, userID, id).Scan(&c.ID, &c.Title, &c.CreatedAt, &c.UpdatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrConversationNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
