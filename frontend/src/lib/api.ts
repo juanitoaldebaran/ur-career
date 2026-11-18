@@ -293,3 +293,122 @@ export function submitQuiz(
     }),
   })
 }
+
+// ---- Consultation (AI career chat) ----
+
+export interface Conversation {
+  id: string
+  title: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  status: 'complete' | 'interrupted' | 'error'
+  created_at: string
+}
+
+export interface Page<T> {
+  items: T[]
+  has_more: boolean
+  next_cursor?: string
+}
+
+const auth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` })
+
+export function listConversations(accessToken: string, cursor?: string): Promise<Page<Conversation>> {
+  const qs = new URLSearchParams({ limit: '20' })
+  if (cursor) qs.set('cursor', cursor)
+  return request(`/consultations?${qs}`, { headers: auth(accessToken) })
+}
+
+export function createConversation(accessToken: string): Promise<Conversation> {
+  return request('/consultations', { method: 'POST', headers: auth(accessToken) })
+}
+
+export function deleteConversation(id: string, accessToken: string): Promise<void> {
+  return request(`/consultations/${id}`, { method: 'DELETE', headers: auth(accessToken) })
+}
+
+// Messages come back oldest-first inside the page; next_cursor asks for older ones.
+export function listMessages(id: string, accessToken: string, cursor?: string): Promise<Page<ChatMessage>> {
+  const qs = new URLSearchParams({ limit: '20' })
+  if (cursor) qs.set('cursor', cursor)
+  return request(`/consultations/${id}/messages?${qs}`, { headers: auth(accessToken) })
+}
+
+export interface StreamHandlers {
+  onDelta: (text: string) => void
+  onDone: (info: { message_id?: string; status?: string }) => void
+  onError: () => void
+}
+
+// Sends a message and reads the Server-Sent Events reply. EventSource can't POST or
+// send an Authorization header, so this uses fetch + a stream reader.
+// Throws ApiError for failures before the first token (404/409/429/...), and the
+// browser's AbortError if the signal fires.
+export async function streamMessage(
+  id: string,
+  content: string,
+  accessToken: string,
+  signal: AbortSignal,
+  handlers: StreamHandlers,
+): Promise<void> {
+  const res = await fetch(`${API_URL}/consultations/${id}/messages`, {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', ...auth(accessToken) },
+    body: JSON.stringify({
+      content,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
+  })
+
+  if (!res.ok || !res.body) {
+    const body = await res.json().catch(() => null)
+    const message = body && typeof body.error === 'string' ? body.error : `request failed (${res.status})`
+    throw new ApiError(res.status, message)
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  const dispatch = (frame: string) => {
+    let event = 'message'
+    let data = ''
+    for (const line of frame.split('\n')) {
+      if (line.startsWith('event:')) event = line.slice(6).trim()
+      else if (line.startsWith('data:')) data += line.slice(5).trim()
+    }
+    if (!data) return
+    let payload: Record<string, unknown>
+    try {
+      payload = JSON.parse(data)
+    } catch {
+      return
+    }
+    if (event === 'delta' && typeof payload.text === 'string') handlers.onDelta(payload.text)
+    else if (event === 'done')
+      handlers.onDone({
+        message_id: typeof payload.message_id === 'string' ? payload.message_id : undefined,
+        status: typeof payload.status === 'string' ? payload.status : undefined,
+      })
+    else if (event === 'error') handlers.onError()
+  }
+
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    // A frame ends with a blank line, and one can be split across network chunks.
+    let cut: number
+    while ((cut = buffer.indexOf('\n\n')) !== -1) {
+      dispatch(buffer.slice(0, cut))
+      buffer = buffer.slice(cut + 2)
+    }
+  }
+}

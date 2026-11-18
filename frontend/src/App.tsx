@@ -28,7 +28,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/consultation" element={<ConsultationPage />} />
+          <Route path="/consultation/:id?" element={<ConsultationPage />} />
           <Route path="/cv-builder" element={<CvBuilderPage />} />
           <Route path="/roadmap" element={<RoadmapsPage />} />
           <Route path="/roadmap/:slug" element={<RoadmapDetailPage />} />
