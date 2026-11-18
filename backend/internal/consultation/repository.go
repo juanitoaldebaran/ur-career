@@ -130,3 +130,44 @@ func (r *PgxRepository) GetConversation(ctx context.Context, userID, id uuid.UUI
 	}
 	return &c, nil
 }
+
+func (r *PgxRepository) ListMessages(ctx context.Context, conversationID uuid.UUID, cur *cursor, limit int) ([]Message, error) {
+	var (
+		rows pgx.Rows
+		err  error
+	)
+
+	if cur == nil {
+		rows, err = r.db.Query(ctx, `SELECT id, role, content, status, created_at
+		FROM messages
+		WHERE conversation_id = $1
+		ORDER BY created_at DESC, id DESC
+		LIMIT = $2`, conversationID, limit+1)
+	} else {
+		rows, err = r.db.Query(ctx, `SELECT id, role, content, status, created_at
+		FROM messages
+		WHERE conversation_id = $1 AND (created_at, user_id) < ($2, $3)
+		ORDER BY created_at DESC, id DESC
+		LIMIT = $4`, conversationID, cur.T, cur.ID, limit+1)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	return scanMessages(rows, limit+1)
+}
+
+func scanMessages(rows pgx.Rows, capHint int) ([]Message, error) {
+	messages := make([]Message, 0, capHint)
+	for rows.Next() {
+		var message Message
+		if err := rows.Scan(&message.ID, &message.Role, &message.Content, &message.Status, &message.CreatedAt); err != ni {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, rows.Err()
+}
