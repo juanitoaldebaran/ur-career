@@ -31,6 +31,15 @@ type Message struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type NewMessage struct {
+	Role             string
+	Content          string
+	Status           string
+	PromptTokens     int
+	CompletionTokens int
+	Model            string
+}
+
 type Conversation struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"string"`
@@ -163,11 +172,64 @@ func scanMessages(rows pgx.Rows, capHint int) ([]Message, error) {
 	messages := make([]Message, 0, capHint)
 	for rows.Next() {
 		var message Message
-		if err := rows.Scan(&message.ID, &message.Role, &message.Content, &message.Status, &message.CreatedAt); err != ni {
+		if err := rows.Scan(&message.ID, &message.Role, &message.Content, &message.Status, &message.CreatedAt); err != nil {
 			return nil, err
 		}
 		messages = append(messages, message)
 	}
 
 	return messages, rows.Err()
+}
+
+func reverse[T any](s []T) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+}
+
+func (r *PgxRepository) AddMessage(ctx context.Context, conversationID uuid.UUID, newMsg NewMessage) (*Message, error) {
+	const query = `INSERT INTO messages (conversation_id, role, content, status, prompt_tokens, completion_tokens) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	RETURNING id, role, content, status, created_at
+	`
+
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback(ctx)
+	var out Message
+	err = tx.QueryRow(ctx, `
+		INSERT INTO messages (conversation_id, role, content, status, prompt_tokens, completion_tokens, model)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, role, content, status, created_at`,
+		conversationID, newMsg.Role, newMsg.Content, newMsg.Status, newMsg.PromptTokens, newMsg.CompletionTokens, newMsg.Model,
+	).Scan(&out.ID, &out.Role, &out.Content, &out.Status, &out.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, tx.Commit(ctx)
+}
+
+func (r *PgxRepository) AcquireLock(ctx context.Context, userID, id uuid.UUID) (bool, error) {
+	tag, err := r.db.Exec(ctx, `
+	UPDATE conversations
+	SET generating_since = now()
+	WHERE id = $1 AND user_id = $2
+	AND (generating_since IS NULL OR generating_since < now() - interval '2 minutes')
+	`, id, userID)
+
+	if err != nil {
+		return false, err
+	}
+
+	return tag.RowsAffected() == 1, nil
+}
+
+func (r *PgxRepository) ReleaseLock(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `UPDATE conversations SET generating_since = NULL WHERE id = $1`, id)
+	return err
 }
