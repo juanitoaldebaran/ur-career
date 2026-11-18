@@ -172,7 +172,7 @@ func scanMessages(rows pgx.Rows, capHint int) ([]Message, error) {
 	messages := make([]Message, 0, capHint)
 	for rows.Next() {
 		var message Message
-		if err := rows.Scan(&message.ID, &message.Role, &message.Content, &message.Status, &message.CreatedAt); err != ni {
+		if err := rows.Scan(&message.ID, &message.Role, &message.Content, &message.Status, &message.CreatedAt); err != nil {
 			return nil, err
 		}
 		messages = append(messages, message)
