@@ -16,6 +16,7 @@ import (
 
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/cache"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/consultation"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/practice"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/practice/ai"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/profile"
@@ -91,6 +92,18 @@ func main() {
 	gemini := ai.NewGemini(os.Getenv("GEMINI_API_KEY"), os.Getenv("GEMINI_MODEL"))
 	quizHandler := practice.NewQuizHandler(practice.NewQuizService(practice.NewPgxQuizRepository(pool), practice.NewGeminiQuizGenerator(gemini), practice.NewPgxStreakRepository(pool)))
 	quizHandler.RegisterRoutes(mux, handler.Authenticate)
+
+	var consultStore ratelimit.Store = ratelimit.NewMemory(10, time.Minute)
+	if rdb != nil {
+		consultStore = ratelimit.NewRedis(rdb, "rl:consult:", 10, time.Minute)
+	}
+	consultLimiter := ratelimit.NewRedisLimiter(consultStore, 10, true, consultation.UserKey)
+	consultService := consultation.NewService(
+		consultation.NewPgxRepository(pool),
+		gemini,
+		consultation.NewProfileSnapshot(profileService),
+	)
+	consultation.NewHandler(consultService).RegisterRoutes(mux, handler.Authenticate, consultLimiter.RedisLimit)
 
 	practiceRepo := practice.NewPgxRepository(pool)
 	practiceGrader := practice.NewGeminiGrader(gemini)

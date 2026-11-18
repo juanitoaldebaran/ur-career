@@ -1,4 +1,4 @@
-zpackage ai
+package ai
 
 import (
 	"bufio"
