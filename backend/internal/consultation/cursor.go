@@ -10,10 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrFailedToUnmarshalCursor = errors.New("failed to unmarshall cursor")
-	ErrInvalidCursor           = errors.New("invalid cursor")
-)
+var ErrInvalidCursor = errors.New("invalid cursor")
 
 const (
 	defaultLimit = 20
@@ -48,7 +45,7 @@ func decodeCursor(s string) (*cursor, error) {
 
 	var c cursor
 	if err := json.Unmarshal(raw, &c); err != nil || c.ID == uuid.Nil {
-		return nil, ErrFailedToUnmarshalCursor
+		return nil, ErrInvalidCursor
 	}
 
 	return &c, nil

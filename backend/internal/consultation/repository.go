@@ -11,10 +11,8 @@ import (
 )
 
 var (
-	ErrConversationError    = errors.New("conversation not found")
-	ErrConversationNotError = errors.New("conversation not error")
+	ErrConversationNotFound = errors.New("conversation not found")
 	ErrBusy                 = errors.New("a reply is already being generated")
-	ErrConversationNotFound = errors.New("error conversation not found")
 )
 
 const defaultTitle = "New chat"
@@ -42,9 +40,24 @@ type NewMessage struct {
 
 type Conversation struct {
 	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"string"`
+	Title     string    `json:"title"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Repository interface {
+	CreateConversation(ctx context.Context, userID uuid.UUID) (*Conversation, error)
+	GetConversation(ctx context.Context, userID, id uuid.UUID) (*Conversation, error)
+	ListConversations(ctx context.Context, userID uuid.UUID, cur *cursor, limit int) ([]Conversation, error) // up to limit+1, newest first
+	DeleteConversation(ctx context.Context, userID, id uuid.UUID) error
+	SetTitle(ctx context.Context, id uuid.UUID, title string) error
+
+	ListMessages(ctx context.Context, conversationID uuid.UUID, cur *cursor, limit int) ([]Message, error) // up to limit+1, newest first
+	RecentMessages(ctx context.Context, conversationID uuid.UUID, n int) ([]Message, error)                // last n, oldest first
+	AddMessage(ctx context.Context, conversationID uuid.UUID, m NewMessage) (*Message, error)
+
+	AcquireLock(ctx context.Context, userID, id uuid.UUID) (bool, error)
+	ReleaseLock(ctx context.Context, id uuid.UUID) error
 }
 
 func NewPgxRepository(db *pgxpool.Pool) *PgxRepository {
@@ -107,13 +120,13 @@ func (r *PgxRepository) CreateConversation(ctx context.Context, userID uuid.UUID
 func (r *PgxRepository) DeleteConversation(ctx context.Context, userID uuid.UUID, id uuid.UUID) error {
 	const query = `DELETE FROM conversations WHERE id = $1 AND user_id = $2`
 
-	tag, err := r.db.Exec(ctx, query, userID, id)
+	tag, err := r.db.Exec(ctx, query, id, userID)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if tag.RowsAffected() == 0 {
-		return ErrConversationNotError
+		return ErrConversationNotFound
 	}
 
 	return nil
@@ -130,7 +143,7 @@ func (r *PgxRepository) GetConversation(ctx context.Context, userID, id uuid.UUI
 	WHERE id = $1 AND user_id = $2`
 
 	var c Conversation
-	err := r.db.QueryRow(ctx, query, userID, id).Scan(&c.ID, &c.Title, &c.CreatedAt, &c.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, id, userID).Scan(&c.ID, &c.Title, &c.CreatedAt, &c.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrConversationNotFound
 	}
@@ -151,13 +164,13 @@ func (r *PgxRepository) ListMessages(ctx context.Context, conversationID uuid.UU
 		FROM messages
 		WHERE conversation_id = $1
 		ORDER BY created_at DESC, id DESC
-		LIMIT = $2`, conversationID, limit+1)
+		LIMIT $2`, conversationID, limit+1)
 	} else {
 		rows, err = r.db.Query(ctx, `SELECT id, role, content, status, created_at
 		FROM messages
-		WHERE conversation_id = $1 AND (created_at, user_id) < ($2, $3)
+		WHERE conversation_id = $1 AND (created_at, id) < ($2, $3)
 		ORDER BY created_at DESC, id DESC
-		LIMIT = $4`, conversationID, cur.T, cur.ID, limit+1)
+		LIMIT $4`, conversationID, cur.T, cur.ID, limit+1)
 	}
 
 	if err != nil {
@@ -166,6 +179,25 @@ func (r *PgxRepository) ListMessages(ctx context.Context, conversationID uuid.UU
 
 	defer rows.Close()
 	return scanMessages(rows, limit+1)
+}
+
+func (r *PgxRepository) RecentMessages(ctx context.Context, conversationID uuid.UUID, n int) ([]Message, error) {
+	rows, err := r.db.Query(ctx, `SELECT id, role, content, status, created_at
+		FROM messages
+		WHERE conversation_id = $1
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2`, conversationID, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages, err := scanMessages(rows, n)
+	if err != nil {
+		return nil, err
+	}
+	reverse(messages) // SQL gave newest-first; the prompt needs oldest-first
+	return messages, nil
 }
 
 func scanMessages(rows pgx.Rows, capHint int) ([]Message, error) {
@@ -188,11 +220,6 @@ func reverse[T any](s []T) {
 }
 
 func (r *PgxRepository) AddMessage(ctx context.Context, conversationID uuid.UUID, newMsg NewMessage) (*Message, error) {
-	const query = `INSERT INTO messages (conversation_id, role, content, status, prompt_tokens, completion_tokens) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
-	RETURNING id, role, content, status, created_at
-	`
-
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -208,6 +235,11 @@ func (r *PgxRepository) AddMessage(ctx context.Context, conversationID uuid.UUID
 	).Scan(&out.ID, &out.Role, &out.Content, &out.Status, &out.CreatedAt)
 
 	if err != nil {
+		return nil, err
+	}
+
+	// Bump the chat so the history panel sorts by latest activity.
+	if _, err := tx.Exec(ctx, `UPDATE conversations SET updated_at = now() WHERE id = $1`, conversationID); err != nil {
 		return nil, err
 	}
 
