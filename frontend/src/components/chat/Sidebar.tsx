@@ -4,10 +4,11 @@ import type { Conversation } from '../../lib/api'
 import HistoryPanel from './HistoryPanel'
 import { Icon, type IconName } from './icons'
 
-// Collapsed: a 72px icon rail with tooltips. Expanded: a 280px drawer with labels and
+// Collapsed: a 56px icon rail with tooltips. Expanded: a 240px drawer with labels and
 // the Recent list. Below md it becomes a slide-over drawer with a backdrop.
 
-const ROW = 'flex h-10 items-center gap-3 rounded-full text-sm font-medium transition-colors duration-150'
+const ROW =
+  'flex h-9 items-center gap-3 rounded-full text-[13px] font-medium transition-colors duration-150 focus-visible:outline-white'
 
 function Tip({ label, show, children }: { label: string; show: boolean; children: ReactNode }) {
   return (
@@ -42,12 +43,12 @@ function NavRow({
   to?: string
   expandedState?: boolean
 }) {
-  const cls = `${ROW} ${labels ? 'w-full px-3' : 'w-10 justify-center'} ${
-    active ? 'bg-rail-active text-blue-700' : 'text-slate-700 hover:bg-rail-hover hover:text-ink'
+  const cls = `${ROW} ${labels ? 'w-full px-2.5' : 'w-9 justify-center'} ${
+    active ? 'bg-white/20 text-white' : 'text-white hover:bg-white/10'
   }`
   const content = (
     <>
-      <Icon name={icon} className="h-5 w-5 shrink-0" />
+      <Icon name={icon} className="h-[17px] w-[17px] shrink-0" />
       {labels && <span className="truncate">{label}</span>}
     </>
   )
@@ -113,11 +114,11 @@ export default function Sidebar({
       aria-label="Sidebar"
       role={modal ? 'dialog' : undefined}
       aria-modal={modal ? true : undefined}
-      className={`fixed inset-y-0 left-0 z-[60] flex w-[280px] flex-col bg-rail pt-5 transition-[width,transform] duration-200 ease-out motion-reduce:transition-none md:z-10 md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-[60] flex w-[240px] flex-col bg-brand pt-5 transition-[width,transform] duration-200 ease-out motion-reduce:transition-none md:z-10 md:translate-x-0 ${
         drawerOpen ? 'translate-x-0' : '-translate-x-full'
-      } ${expanded ? 'md:w-[280px]' : 'md:w-[72px]'}`}
+      } ${expanded ? 'md:w-[240px]' : 'md:w-14'}`}
     >
-      <div className={`flex flex-col gap-1 px-3 ${labels ? '' : 'items-center'}`}>
+      <div className={`flex flex-col gap-1 px-2.5 ${labels ? '' : 'items-center'}`}>
         <NavRow
           label={isDesktop ? (expanded ? 'Collapse sidebar' : 'Expand sidebar') : 'Close sidebar'}
           icon={isDesktop ? 'menu' : 'close'}
@@ -131,7 +132,7 @@ export default function Sidebar({
       </div>
 
       {labels ? (
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-2 pt-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 pb-2 pt-3">
           <HistoryPanel
             conversations={conversations}
             loading={loading}
@@ -146,7 +147,7 @@ export default function Sidebar({
         <div className="flex-1" />
       )}
 
-      <div className={`flex flex-col gap-1 px-3 pb-4 pt-2 ${labels ? '' : 'items-center'}`}>
+      <div className={`flex flex-col gap-1 px-2.5 pb-4 pt-2 ${labels ? '' : 'items-center'}`}>
         <NavRow label="Profile" icon="user" labels={labels} to="/profile" />
       </div>
     </aside>

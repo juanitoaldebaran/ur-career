@@ -13,11 +13,6 @@
   --color-brand: #2563eb;
   --color-brand-soft: #eff4ff;
   --color-line: #e5e8ef;
-
-  /* Sidebar surface: a soft cool tint that separates from the white canvas without a hard border. */
-  --color-rail: #f0f4f9;
-  --color-rail-hover: #e3e9f2;
-  --color-rail-active: #d8e5fd;
 }
 
 @layer base {

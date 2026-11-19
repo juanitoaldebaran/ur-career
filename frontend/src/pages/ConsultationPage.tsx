@@ -153,7 +153,7 @@ export default function ConsultationPage() {
         onDelete={chat.removeConversation}
       />
 
-      <section className={`flex min-w-0 flex-1 flex-col md:transition-[margin] md:duration-200 motion-reduce:transition-none ${expanded ? 'md:ml-[280px]' : 'md:ml-[72px]'}`}>
+      <section className={`flex min-w-0 flex-1 flex-col md:transition-[margin] md:duration-200 motion-reduce:transition-none ${expanded ? 'md:ml-[240px]' : 'md:ml-14'}`}>
         <div className="flex items-center gap-2 border-b border-line px-4 py-2 md:hidden">
           <button
             ref={openerRef}
