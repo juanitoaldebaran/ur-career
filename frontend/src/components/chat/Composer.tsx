@@ -1,6 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent } from 'react'
 import { useSpeechInput } from '../../hooks/useSpeechInput'
-import { Icon } from './icons'
+import { Icon } from '../icons'
 
 const MAX_LENGTH = 4000
 const MAX_HEIGHT = 192
