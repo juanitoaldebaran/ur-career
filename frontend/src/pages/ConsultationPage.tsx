@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { getProfileStats, type ProfileStats } from '../lib/api'
 import { useChat } from '../hooks/useChat'
-import HistoryPanel from '../components/chat/HistoryPanel'
+import Sidebar from '../components/chat/Sidebar'
+import { Icon } from '../components/chat/icons'
 import MessageList from '../components/chat/MessageList'
 import Composer from '../components/chat/Composer'
 
@@ -32,39 +33,7 @@ function buildStarters(stats: ProfileStats | null): string[] {
   return out.slice(0, 3)
 }
 
-const HISTORY_KEY = 'ur_career_history_open'
-
-function RailButton({
-  label,
-  active,
-  onClick,
-  children,
-}: {
-  label: string
-  active?: boolean
-  onClick: () => void
-  children: ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={label}
-      aria-label={label}
-      aria-pressed={active}
-      className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
-        active ? 'bg-brand-soft text-brand' : 'text-slate-600 hover:bg-slate-100 hover:text-ink'
-      }`}
-    >
-      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {children}
-      </svg>
-    </button>
-  )
-}
-
-const PEN = <><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></>
-const CLOCK = <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></>
+const SIDEBAR_KEY = 'ur_career_sidebar_expanded'
 
 export default function ConsultationPage() {
   const { id } = useParams()
@@ -75,13 +44,16 @@ export default function ConsultationPage() {
 
   const [draft, setDraft] = useState('')
   const [drawer, setDrawer] = useState(false)
-  // Desktop: history is hidden until asked for, like a collapsed sidebar.
-  const [historyOpen, setHistoryOpen] = useState(() => {
+  // Desktop sidebar: expanded drawer or collapsed icon rail. The choice is remembered;
+  // first visit starts expanded on wide screens and collapsed on narrow ones.
+  const [expanded, setExpanded] = useState(() => {
     try {
-      return localStorage.getItem(HISTORY_KEY) === '1'
+      const saved = localStorage.getItem(SIDEBAR_KEY)
+      if (saved !== null) return saved === '1'
     } catch {
-      return false
+      // fall through to the default
     }
+    return window.innerWidth >= 1024
   })
   const [stats, setStats] = useState<ProfileStats | null>(null)
   const drawerRef = useRef<HTMLElement>(null)
@@ -96,15 +68,13 @@ export default function ConsultationPage() {
 
   const closeDrawer = useCallback(() => setDrawer(false), [])
 
-  function toggleHistory() {
-    setHistoryOpen((open) => {
-      try {
-        localStorage.setItem(HISTORY_KEY, open ? '0' : '1')
-      } catch {
-        // preference just won't persist
-      }
-      return !open
-    })
+  function setSidebar(next: boolean) {
+    setExpanded(next)
+    try {
+      localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0')
+    } catch {
+      // the preference just won't persist
+    }
   }
 
   // Mobile drawer: Esc closes, Tab stays inside, focus returns to the opener.
@@ -150,54 +120,40 @@ export default function ConsultationPage() {
   const loading = !!id && !chat.thread?.loaded && !chat.threadError
   const landing = !id || (!!chat.thread?.loaded && items.length === 0 && !chat.busy)
   const starters = buildStarters(stats)
-  const panelHidden = isDesktop ? !historyOpen : !drawer
 
   return (
     <div className="flex h-[calc(100svh-6rem)] w-full">
-      {drawer && !isDesktop && (
-        <div className="fixed inset-0 z-[55] bg-ink/40" onClick={closeDrawer} aria-hidden="true" />
-      )}
+      {/* Mobile: backdrop behind the slide-over drawer. */}
+      <div
+        onClick={closeDrawer}
+        aria-hidden="true"
+        className={`fixed inset-0 z-[55] bg-ink/40 transition-opacity duration-200 md:hidden ${
+          drawer ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
 
-      {/* Desktop rail: flush left, full height, icons only. */}
-      <nav
-        aria-label="Chat tools"
-        className="fixed inset-y-0 left-0 z-10 hidden w-16 flex-col items-center gap-1 border-r border-line bg-white pt-28 md:flex"
-      >
-        <RailButton label="New chat" onClick={() => navigate('/consultation')}>
-          {PEN}
-        </RailButton>
-        <RailButton label={historyOpen ? 'Hide history' : 'Show history'} active={historyOpen} onClick={toggleHistory}>
-          {CLOCK}
-        </RailButton>
-      </nav>
+      <Sidebar
+        panelRef={drawerRef}
+        isDesktop={isDesktop}
+        expanded={expanded}
+        drawerOpen={drawer}
+        newActive={!id}
+        onToggle={() => setSidebar(!expanded)}
+        onCloseDrawer={closeDrawer}
+        onNewChat={() => {
+          navigate('/consultation')
+          closeDrawer()
+        }}
+        onOpenHistory={() => setSidebar(true)}
+        conversations={chat.conversations}
+        loading={chat.convLoading}
+        hasMore={chat.convHasMore}
+        onLoadMore={chat.loadMoreConversations}
+        activeId={id}
+        onDelete={chat.removeConversation}
+      />
 
-      <aside
-        ref={drawerRef}
-        inert={panelHidden}
-        aria-label="Conversations"
-        aria-modal={drawer && !isDesktop ? true : undefined}
-        role={drawer && !isDesktop ? 'dialog' : undefined}
-        className={`fixed inset-y-0 left-0 z-[60] w-72 border-r border-line bg-slate-50 transition-transform duration-200 motion-reduce:transition-none md:left-16 md:z-10 md:translate-x-0 md:pt-24 ${
-          historyOpen ? 'md:block' : 'md:hidden'
-        } ${drawer ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <HistoryPanel
-          conversations={chat.conversations}
-          loading={chat.convLoading}
-          hasMore={chat.convHasMore}
-          onLoadMore={chat.loadMoreConversations}
-          activeId={id}
-          onDelete={chat.removeConversation}
-          onNew={() => {
-            navigate('/consultation')
-            closeDrawer()
-          }}
-          onClose={isDesktop ? undefined : closeDrawer}
-          onCollapse={isDesktop ? toggleHistory : undefined}
-        />
-      </aside>
-
-      <section className={`flex min-w-0 flex-1 flex-col md:transition-[margin] md:duration-200 motion-reduce:transition-none ${historyOpen ? 'md:ml-[22rem]' : 'md:ml-16'}`}>
+      <section className={`flex min-w-0 flex-1 flex-col md:transition-[margin] md:duration-200 motion-reduce:transition-none ${expanded ? 'md:ml-[280px]' : 'md:ml-[72px]'}`}>
         <div className="flex items-center gap-2 border-b border-line px-4 py-2 md:hidden">
           <button
             ref={openerRef}
@@ -205,9 +161,7 @@ export default function ConsultationPage() {
             aria-label="Open conversation history"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-ink hover:bg-slate-100"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 7h16M4 12h16M4 17h10" />
-            </svg>
+            <Icon name="menu" />
           </button>
           <p className="flex-1 text-sm font-medium">Consultation</p>
           <button
@@ -215,9 +169,7 @@ export default function ConsultationPage() {
             aria-label="New chat"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-ink hover:bg-slate-100"
           >
-            <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {PEN}
-            </svg>
+            <Icon name="newChat" />
           </button>
         </div>
 
