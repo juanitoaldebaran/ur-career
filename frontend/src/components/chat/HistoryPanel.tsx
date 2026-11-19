@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Conversation } from '../../lib/api'
+import { Icon } from './icons'
 
 function bucket(iso: string): string {
   const d = new Date(iso)
@@ -27,13 +28,13 @@ function Item({
 
   if (confirming) {
     return (
-      <li className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm ring-1 ring-line">
+      <li className="flex items-center justify-between gap-2 rounded-2xl bg-white px-4 py-2 text-sm">
         <span className="truncate text-slate-600">Delete this chat?</span>
         <span className="flex shrink-0 gap-1">
-          <button onClick={() => onDelete(conv.id)} className="rounded-md px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">
+          <button onClick={() => onDelete(conv.id)} className="rounded-full px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">
             Delete
           </button>
-          <button onClick={() => setConfirming(false)} className="rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100">
+          <button onClick={() => setConfirming(false)} className="rounded-full px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-rail">
             Cancel
           </button>
         </span>
@@ -47,8 +48,8 @@ function Item({
         to={`/consultation/${conv.id}`}
         onClick={onNavigate}
         aria-current={active ? 'page' : undefined}
-        className={`block truncate rounded-lg py-2 pl-3 pr-9 text-sm transition-colors ${
-          active ? 'bg-brand-soft font-medium text-brand' : 'text-slate-700 hover:bg-white'
+        className={`block truncate rounded-full py-2 pl-4 pr-11 text-sm transition-colors duration-150 ${
+          active ? 'bg-rail-active font-medium text-blue-700' : 'text-slate-700 hover:bg-rail-hover hover:text-ink'
         }`}
       >
         {conv.title}
@@ -56,16 +57,16 @@ function Item({
       <button
         onClick={() => setConfirming(true)}
         aria-label={`Delete conversation: ${conv.title}`}
-        className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-red-700 focus-visible:opacity-100 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+        title="Delete"
+        className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-black/5 hover:text-red-700 focus-visible:opacity-100 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
       >
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
-        </svg>
+        <Icon name="trash" className="h-4 w-4" />
       </button>
     </li>
   )
 }
 
+// The "Recent" list: conversations grouped by day, with infinite scroll.
 export default function HistoryPanel({
   conversations,
   loading,
@@ -73,9 +74,7 @@ export default function HistoryPanel({
   onLoadMore,
   activeId,
   onDelete,
-  onNew,
-  onClose,
-  onCollapse,
+  onNavigate,
 }: {
   conversations: Conversation[]
   loading: boolean
@@ -83,9 +82,7 @@ export default function HistoryPanel({
   onLoadMore: () => void
   activeId?: string
   onDelete: (id: string) => void
-  onNew: () => void
-  onClose?: () => void
-  onCollapse?: () => void // desktop: hides the panel back to the rail
+  onNavigate: () => void
 }) {
   const end = useRef<HTMLDivElement>(null)
 
@@ -98,7 +95,6 @@ export default function HistoryPanel({
     return [...map.entries()]
   }, [conversations])
 
-  // Infinite scroll: load the next page when the end of the list is visible.
   useEffect(() => {
     const el = end.current
     if (!el || !hasMore || loading) return
@@ -108,65 +104,31 @@ export default function HistoryPanel({
   }, [hasMore, loading, conversations.length, onLoadMore])
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 p-3">
-        <button onClick={onNew} className="btn btn-ghost flex-1 justify-start bg-white">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          New chat
-        </button>
-        {onCollapse && (
-          <button
-            onClick={onCollapse}
-            title="Hide history"
-            aria-label="Hide history"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-white hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-            </svg>
-          </button>
-        )}
-        {onClose && (
-          <button
-            onClick={onClose}
-            aria-label="Close history"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-600 hover:bg-white"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      <nav aria-label="Conversation history" className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-        {groups.map(([label, list]) => (
-          <section key={label} className="mt-4 first:mt-1">
-            <h2 className="px-3 pb-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-500">{label}</h2>
-            <ul className="space-y-0.5">
-              {list.map((c) => (
-                <Item key={c.id} conv={c} active={c.id === activeId} onDelete={onDelete} onNavigate={() => onClose?.()} />
-              ))}
-            </ul>
-          </section>
-        ))}
-
-        {loading && conversations.length === 0 && (
-          <div className="space-y-2 px-3 pt-2" role="status" aria-label="Loading conversations">
-            {[70, 55, 80, 45].map((w) => (
-              <div key={w} className="h-4 animate-pulse rounded-full bg-line" style={{ width: `${w}%` }} />
+    <nav aria-label="Recent conversations">
+      {groups.map(([label, list]) => (
+        <section key={label} className="mt-4 first:mt-1">
+          <h2 className="px-4 pb-1.5 text-xs font-medium text-slate-600">{label}</h2>
+          <ul className="space-y-0.5">
+            {list.map((c) => (
+              <Item key={c.id} conv={c} active={c.id === activeId} onDelete={onDelete} onNavigate={onNavigate} />
             ))}
-          </div>
-        )}
+          </ul>
+        </section>
+      ))}
 
-        {!loading && conversations.length === 0 && (
-          <p className="px-3 pt-3 text-sm leading-relaxed text-slate-500">No conversations yet. Ask your first question to start one.</p>
-        )}
+      {loading && conversations.length === 0 && (
+        <div className="space-y-2.5 px-4 pt-2" role="status" aria-label="Loading conversations">
+          {[70, 55, 80, 45].map((w) => (
+            <div key={w} className="h-4 animate-pulse rounded-full bg-rail-hover" style={{ width: `${w}%` }} />
+          ))}
+        </div>
+      )}
 
-        <div ref={end} aria-hidden="true" className="h-1" />
-      </nav>
-    </div>
+      {!loading && conversations.length === 0 && (
+        <p className="px-4 pt-2 text-sm leading-relaxed text-slate-600">No conversations yet. Ask your first question to start one.</p>
+      )}
+
+      <div ref={end} aria-hidden="true" className="h-1" />
+    </nav>
   )
 }
