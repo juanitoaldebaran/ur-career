@@ -1,4 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent } from 'react'
+import { useSpeechInput } from '../../hooks/useSpeechInput'
+import { Icon } from './icons'
 
 const MAX_LENGTH = 4000
 const MAX_HEIGHT = 192
@@ -17,6 +19,19 @@ export default function Composer({
   busy: boolean
 }) {
   const ref = useRef<HTMLTextAreaElement>(null)
+  const { supported, listening, error: dictationError, start: startDictation, stop: stopDictation } = useSpeechInput(onChange)
+  const wasListening = useRef(false)
+
+  // Sending a message ends dictation.
+  useEffect(() => {
+    if (busy) stopDictation()
+  }, [busy, stopDictation])
+
+  // When dictation ends, put the cursor back in the box so the text can be edited.
+  useEffect(() => {
+    if (wasListening.current && !listening) ref.current?.focus()
+    wasListening.current = listening
+  }, [listening])
 
   // Grow with the text, up to about 6 lines.
   useEffect(() => {
@@ -35,7 +50,10 @@ export default function Composer({
       e.preventDefault()
       if (!busy) onSubmit()
     }
-    if (e.key === 'Escape' && busy) onStop()
+    if (e.key === 'Escape') {
+      if (listening) stopDictation()
+      else if (busy) onStop()
+    }
   }
 
   const canSend = value.trim().length > 0 && !busy
@@ -53,11 +71,28 @@ export default function Composer({
           rows={1}
           value={value}
           maxLength={MAX_LENGTH}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            if (listening) stopDictation() // typing takes over from dictation
+            onChange(e.target.value)
+          }}
           onKeyDown={onKeyDown}
-          placeholder="Ask about your career…"
+          placeholder={listening ? 'Listening… speak now' : 'Ask about your career…'}
           className="max-h-48 min-h-[2.75rem] flex-1 resize-none bg-transparent py-2.5 text-base leading-6 text-ink outline-none placeholder:text-slate-500"
         />
+        {supported && !busy && (
+          <button
+            type="button"
+            onClick={() => (listening ? stopDictation() : startDictation(value))}
+            aria-label={listening ? 'Stop dictation' : 'Dictate your message'}
+            aria-pressed={listening}
+            title={listening ? 'Stop dictation' : 'Dictate'}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+              listening ? 'bg-brand text-white ring-4 ring-brand/20' : 'text-slate-600 hover:bg-slate-100 hover:text-ink'
+            }`}
+          >
+            <Icon name="mic" className="h-[18px] w-[18px]" />
+          </button>
+        )}
         {busy ? (
           <button
             type="button"
@@ -83,13 +118,22 @@ export default function Composer({
           </button>
         )}
       </div>
-      <p className="mt-2 flex items-center justify-between gap-3 px-2 text-[11px] leading-snug text-slate-500">
-        {nearLimit && (
-          <span className="shrink-0 font-mono">
-            {value.length}/{MAX_LENGTH}
+      {(listening || dictationError || nearLimit) && (
+        <p
+          className={`mt-2 flex items-center justify-between gap-3 px-2 text-[11px] leading-snug ${dictationError ? 'text-red-700' : 'text-slate-500'}`}
+          role={dictationError ? 'alert' : 'status'}
+        >
+          <span>
+            {dictationError ??
+              (listening ? "Listening. Your browser's speech service processes the audio." : '')}
           </span>
-        )}
-      </p>
+          {nearLimit && (
+            <span className="shrink-0 font-mono">
+              {value.length}/{MAX_LENGTH}
+            </span>
+          )}
+        </p>
+      )}
     </div>
   )
 }
