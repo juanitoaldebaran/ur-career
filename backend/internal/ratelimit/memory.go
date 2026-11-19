@@ -35,7 +35,7 @@ func (m *Memory) Allow(_ context.Context, key string) (Result, error) {
 
 	w, ok := m.windows[key]
 	if !ok || !now.Before(w.resetAt) {
-		w := &window{resetAt: now.Add(m.size)}
+		w = &window{resetAt: now.Add(m.size)}
 		m.windows[key] = w
 	}
 
