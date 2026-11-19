@@ -4,7 +4,7 @@ import { useAuth } from '../lib/AuthContext'
 import { getProfileStats, type ProfileStats } from '../lib/api'
 import { useChat } from '../hooks/useChat'
 import Sidebar from '../components/chat/Sidebar'
-import { Icon } from '../components/chat/icons'
+import { Icon } from '../components/icons'
 import MessageList from '../components/chat/MessageList'
 import Composer from '../components/chat/Composer'
 
@@ -67,6 +67,15 @@ export default function ConsultationPage() {
   }, [accessToken])
 
   const closeDrawer = useCallback(() => setDrawer(false), [])
+
+  // The navbar centres itself on the content area, so tell it how wide the sidebar is.
+  useEffect(() => {
+    const width = isDesktop ? (expanded ? '240px' : '56px') : '0px'
+    document.documentElement.style.setProperty('--sidebar-w', width)
+    return () => {
+      document.documentElement.style.removeProperty('--sidebar-w')
+    }
+  }, [isDesktop, expanded])
 
   function setSidebar(next: boolean) {
     setExpanded(next)

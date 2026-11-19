@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Conversation } from '../../lib/api'
-import { Icon } from './icons'
+import { Icon } from '../icons'
 
 function bucket(iso: string): string {
   const d = new Date(iso)

@@ -11,13 +11,18 @@ import {
 import { useAuth } from '../lib/AuthContext'
 import Logo from './Logo'
 import UserMenu from './UserMenu'
+import { Icon, type IconName } from './icons'
 
-const NAV_ITEMS = [
-  { label: 'Consultation', to: '/consultation' },
-  { label: 'CV Builder', to: '/cv-builder' },
-  { label: 'Roadmap', to: '/roadmap' },
-  { label: 'Practice', to: '/practice' },
+const NAV_ITEMS: { label: string; to: string; icon: IconName }[] = [
+  { label: 'Consultation', to: '/consultation', icon: 'chat' },
+  { label: 'CV Builder', to: '/cv-builder', icon: 'file' },
+  { label: 'Roadmap', to: '/roadmap', icon: 'map' },
+  { label: 'Practice', to: '/practice', icon: 'code' },
 ]
+
+function Divider() {
+  return <span aria-hidden="true" className="mx-1.5 hidden h-5 w-px shrink-0 bg-slate-200 md:block" />
+}
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -30,16 +35,13 @@ export default function Navbar() {
   const { pathname } = useLocation()
   const reduce = useReducedMotion()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [hovered, setHovered] = useState<string | null>(null)
   const [hidden, setHidden] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
 
   const { scrollY, scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 28 })
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const previous = scrollY.getPrevious() ?? 0
-    setScrolled(latest > 12)
     setHidden(latest > previous && latest > 140 && !mobileOpen)
   })
 
@@ -69,82 +71,64 @@ export default function Navbar() {
         className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left bg-blue-600"
       />
 
+      {/* Centred on the content area: --sidebar-w is set by pages that have a sidebar
+          (0 elsewhere). The header is a container, so labels drop out when space is tight. */}
       <motion.header
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: hidden ? -100 : 0, opacity: 1 }}
         transition={{ duration: reduce ? 0 : 0.5, ease: EASE }}
-        className="fixed left-1/2 top-4 z-20 w-[calc(100%-2rem)] max-w-fit -translate-x-1/2"
+        className="@container pointer-events-none fixed inset-x-0 top-4 z-20 flex justify-center pl-[calc(var(--sidebar-w,0px)_+_1rem)] pr-4 transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
       >
-        <motion.div
-          animate={{
-            paddingTop: scrolled ? 6 : 8,
-            paddingBottom: scrolled ? 6 : 8,
-          }}
-          transition={{ duration: 0.25 }}
-          className={`flex items-center justify-between gap-3 rounded-full border px-4 backdrop-blur-md sm:pl-5 transition-[background-color,border-color,box-shadow] duration-300 sm:gap-8 sm:px-6 ${
-            scrolled
-              ? 'border-line bg-white/85 shadow-lg shadow-ink/5'
-              : 'border-line bg-white shadow-sm'
-          }`}
-        >
-          <Logo />
+        <div className="pointer-events-auto flex w-full max-w-full items-center justify-between gap-1 rounded-full border border-slate-200 bg-white p-1.5 shadow-[0_2px_10px_rgba(15,23,42,0.04)] md:w-auto md:justify-start">
+          <div className="flex items-center pl-2.5 pr-1">
+            <Logo labelClassName="hidden @[30rem]:inline" />
+          </div>
 
-          <nav
-            className="relative hidden items-center gap-1 md:flex"
-            onMouseLeave={() => setHovered(null)}
-          >
+          <Divider />
+
+          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
             {NAV_ITEMS.map((item) => {
               const active = isActivePath(pathname, item.to)
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  onMouseEnter={() => setHovered(item.to)}
-                  onFocus={() => setHovered(item.to)}
-                  onBlur={() => setHovered(null)}
-                  className={`relative rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                    active ? 'text-ink' : 'text-slate-500 hover:text-ink'
+                  aria-label={item.label}
+                  title={item.label}
+                  className={`relative isolate flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium transition-colors duration-150 @[44rem]:px-3.5 ${
+                    active ? 'text-white' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
                   }`}
                 >
-                  {hovered === item.to && !active && (
-                    <motion.span
-                      layoutId="nav-hover"
-                      className="absolute inset-0 -z-10 rounded-full bg-slate-100"
-                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                    />
-                  )}
                   {active && (
                     <motion.span
                       layoutId="nav-active"
-                      className="absolute inset-0 -z-10 rounded-full bg-brand-soft"
+                      className="absolute inset-0 -z-10 rounded-full bg-brand shadow-xs"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
-                  {item.label}
+                  <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+                  <span className="hidden @[44rem]:inline">{item.label}</span>
                 </NavLink>
               )
             })}
           </nav>
 
+          <Divider />
+
           <div className="hidden md:flex md:items-center">
             {user ? (
               <UserMenu />
             ) : (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/login"
-                  className="btn btn-primary !rounded-full !px-4 !py-1.5"
-                >
-                  Sign in
-                </Link>
-              </motion.div>
+              <Link to="/login" className="btn btn-primary !h-9 !rounded-full !px-4 !py-0">
+                Sign in
+              </Link>
             )}
           </div>
 
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => setMobileOpen((value) => !value)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-slate-100 md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 md:hidden"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
           >
@@ -164,7 +148,7 @@ export default function Navbar() {
               />
             </svg>
           </motion.button>
-        </motion.div>
+        </div>
       </motion.header>
 
       <AnimatePresence>
@@ -200,7 +184,7 @@ export default function Navbar() {
                       to={navItem.to}
                       className={`flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
                         active
-                          ? 'bg-brand-soft text-ink'
+                          ? 'bg-brand text-white'
                           : 'text-slate-700 hover:bg-slate-100 active:bg-slate-100'
                       }`}
                     >

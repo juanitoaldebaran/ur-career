@@ -61,8 +61,8 @@ export default function UserMenu({ inline = false }: UserMenuProps) {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setOpen((value) => !value)}
-        className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-medium text-white transition-colors ${
-          open ? 'bg-brand' : 'bg-ink hover:bg-brand'
+        className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-medium text-white transition-[background-color,box-shadow] duration-150 hover:ring-2 hover:ring-blue-600/20 ${
+          open ? 'bg-brand ring-2 ring-blue-600/20' : 'bg-ink'
         }`}
         aria-haspopup="true"
         aria-expanded={open}

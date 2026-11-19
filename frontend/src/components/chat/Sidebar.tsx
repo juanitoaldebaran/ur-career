@@ -2,7 +2,7 @@ import type { ReactNode, RefObject } from 'react'
 import { Link } from 'react-router-dom'
 import type { Conversation } from '../../lib/api'
 import HistoryPanel from './HistoryPanel'
-import { Icon, type IconName } from './icons'
+import { Icon, type IconName } from '../icons'
 
 // Collapsed: a 56px icon rail with tooltips. Expanded: a 240px drawer with labels and
 // the Recent list. Below md it becomes a slide-over drawer with a backdrop.

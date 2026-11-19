@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom'
 
-export default function Logo({ inverted = false, className = '' }: { inverted?: boolean; className?: string }) {
+export default function Logo({
+  inverted = false,
+  className = '',
+  labelClassName = '',
+}: {
+  inverted?: boolean
+  className?: string
+  labelClassName?: string
+}) {
   return (
     <Link to="/" className={`inline-flex items-center gap-2 font-display text-lg font-semibold tracking-tight ${className}`}>
       <span
@@ -9,7 +17,7 @@ export default function Logo({ inverted = false, className = '' }: { inverted?: 
       >
         u
       </span>
-      <span className={inverted ? 'text-white' : 'text-ink'}>ur-career</span>
+      <span className={`${inverted ? 'text-white' : 'text-ink'} ${labelClassName}`}>ur-career</span>
     </Link>
   )
 }
