@@ -171,3 +171,20 @@
     animation: none;
   }
 }
+
+/* CV Builder: "Download PDF" prints only the resume (see PrintRoot). */
+#cv-print-root {
+  display: none;
+}
+@media print {
+  @page {
+    size: letter;
+    margin: 0;
+  }
+  #root {
+    display: none !important;
+  }
+  #cv-print-root {
+    display: block;
+  }
+}
