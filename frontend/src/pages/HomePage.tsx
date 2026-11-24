@@ -1,15 +1,6 @@
-import type { MouseEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  type Variants,
-} from 'motion/react'
+import { motion, useReducedMotion, type Variants } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 import TypingWord from '../components/TypingWord'
 import { CtaBanner, HomeFooter, HowItWorks, WhySection } from '../components/HomeSections'
@@ -83,92 +74,53 @@ const FEATURES: Feature[] = [
 
 const container: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
 }
 
 const item: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+}
+
+function Arrow({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={`h-4 w-4 ${className}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  )
 }
 
 function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
   const reduce = useReducedMotion()
-  const x = useMotionValue(0.5)
-  const y = useMotionValue(0.5)
-  const px = useMotionValue(0)
-  const py = useMotionValue(0)
-
-  const rotateX = useSpring(useTransform(y, [0, 1], [6, -6]), { stiffness: 200, damping: 20 })
-  const rotateY = useSpring(useTransform(x, [0, 1], [-6, 6]), { stiffness: 200, damping: 20 })
-  const spotlight = useMotionTemplate`radial-gradient(260px circle at ${px}px ${py}px, rgba(37,99,235,0.14), transparent 70%)`
-
-  function handleMove(event: MouseEvent<HTMLElement>) {
-    const rect = event.currentTarget.getBoundingClientRect()
-    px.set(event.clientX - rect.left)
-    py.set(event.clientY - rect.top)
-    x.set((event.clientX - rect.left) / rect.width)
-    y.set((event.clientY - rect.top) / rect.height)
-  }
-
-  function handleLeave() {
-    x.set(0.5)
-    y.set(0.5)
-  }
-
   return (
-    <motion.div
-      variants={item}
-      style={{ perspective: 900 }}
-      className="h-full"
-    >
-      <motion.div
-        onMouseMove={reduce ? undefined : handleMove}
-        onMouseLeave={reduce ? undefined : handleLeave}
-        style={reduce ? undefined : { rotateX, rotateY, transformStyle: 'preserve-3d' }}
-        whileHover={reduce ? undefined : { y: -6 }}
-        whileTap={reduce ? undefined : { scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-        className="group relative h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-600/10"
-      >
-        <motion.div
-          aria-hidden="true"
-          style={{ background: spotlight }}
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-blue-600 transition-transform duration-300 group-hover:scale-x-100"
-        />
-        <Link to={feature.to} className="relative flex h-full flex-col gap-4 p-6">
+    <motion.div variants={item} className="h-full">
+      <motion.div whileHover={reduce ? undefined : { y: -2 }} transition={{ duration: 0.2 }} className="h-full">
+        <Link
+          to={feature.to}
+          className="group flex h-full flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition-colors duration-200 hover:border-brand"
+        >
           <div className="flex items-center justify-between">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-600 group-hover:shadow-blue-600/30">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand transition-colors duration-200 group-hover:bg-brand group-hover:text-white">
               {feature.icon}
             </span>
-            <span className="text-xs font-medium tabular-nums text-slate-300 transition-colors duration-300 group-hover:text-blue-300">
-              0{index + 1}
-            </span>
+            <span className="font-mono text-[11px] tabular-nums text-slate-400">0{index + 1}</span>
           </div>
           <div>
-            <h3 className="text-lg font-semibold tracking-tight text-slate-900">
-              {feature.title}
-            </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-              {feature.description}
-            </p>
+            <h3 className="text-lg font-semibold text-ink">{feature.title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{feature.description}</p>
           </div>
-          <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-blue-600">
+          <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
             Open
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <Arrow className="transition-transform duration-200 group-hover:translate-x-1" />
           </span>
         </Link>
       </motion.div>
@@ -182,94 +134,54 @@ interface Cta {
 }
 
 interface HeroProps {
+  eyebrow: string
   headline: ReactNode
+  lead: string
   primary: Cta
   secondary: Cta
 }
 
-function Hero({ headline, primary, secondary }: HeroProps) {
-  const reduce = useReducedMotion()
-
-  const { scrollY } = useScroll()
-  const fade = useTransform(scrollY, [0, 400], [1, 0])
-  const lift = useTransform(scrollY, [0, 400], [0, -40])
-
+function Hero({ eyebrow, headline, lead, primary, secondary }: HeroProps) {
   return (
-    <section className="relative isolate flex min-h-[70svh] flex-col items-center justify-center overflow-hidden bg-white px-4 text-center">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 [background-image:linear-gradient(to_right,rgba(15,23,42,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.05)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
-      />
-
-      <motion.div style={reduce ? undefined : { opacity: fade, y: lift }}>
-        <motion.span
-          initial={{ opacity: 0, y: -10 }}
+    <section className="relative border-b border-line bg-white">
+      <div className="mx-auto flex min-h-[64svh] max-w-6xl flex-col justify-center px-4 py-16 sm:px-6">
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur"
+          transition={{ duration: 0.5, ease: EASE }}
+          className="eyebrow"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
-          </span>
-          Your AI Tech Career Coach
-        </motion.span>
+          {eyebrow}
+        </motion.p>
 
-        <h1 className="mt-6 min-h-[1.2em] text-3xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl">
+        <h1 className="mt-4 min-h-[1.1em] max-w-3xl text-4xl font-semibold leading-[1.05] text-balance text-ink sm:text-6xl">
           {headline}
         </h1>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: EASE }}
-          className="mx-auto mt-5 h-px w-10 rounded-full bg-slate-900/15"
-        />
-
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-          className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-500 sm:text-lg"
+          transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
+          className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg"
         >
-          Plan your path, build your CV, and practice for the roles you want - all in one place.
+          {lead}
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.65, ease: EASE }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-3"
+          transition={{ duration: 0.6, delay: 0.4, ease: EASE }}
+          className="mt-9 flex flex-col gap-3 sm:flex-row"
         >
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-            <Link
-              to={primary.to}
-              className="group inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-colors hover:bg-blue-600"
-            >
-              {primary.label}
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </Link>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-            <Link
-              to={secondary.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:border-blue-300 hover:text-blue-600"
-            >
-              {secondary.label}
-            </Link>
-          </motion.div>
+          <Link to={primary.to} className="btn btn-primary group px-6 py-3">
+            {primary.label}
+            <Arrow className="transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+          <Link to={secondary.to} className="btn btn-ghost px-6 py-3">
+            {secondary.label}
+          </Link>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   )
 }
@@ -282,20 +194,30 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
   return (
     <div className="-mt-24 pt-24">
       <Hero
+        eyebrow={guest ? 'AI career coach for tech' : 'Your workspace'}
         headline={
           guest ? (
             <>
-              Your Best AI<span className="text-blue-600"> Tech Career Coach</span>
+              Plan your tech career<span className="text-brand">, step by step.</span>
             </>
           ) : (
             <TypingWord text={fullText} highlightFrom={GREETING_PREFIX.length} />
           )
         }
+        lead={
+          guest
+            ? 'Pick a roadmap, build your CV and practise interviews for the role you want, with an AI coach that knows the industry.'
+            : 'Pick up where you left off: continue a roadmap, refine your CV or practise for your next interview.'
+        }
         primary={guest ? { label: 'Start now', to: '/register' } : { label: 'Start a consultation', to: '/consultation' }}
         secondary={guest ? { label: 'Sign in', to: '/login' } : { label: 'Explore roadmaps', to: '/roadmap' }}
       />
 
-      {guest && <ProductPreview />}
+      {guest && (
+        <div className="pt-16">
+          <ProductPreview />
+        </div>
+      )}
       {guest && <TechMarquee />}
 
       <motion.section
@@ -303,20 +225,16 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: '-80px' }}
-        className="mx-auto max-w-6xl px-4 pb-24 sm:px-6"
+        className="mx-auto max-w-6xl px-4 py-16 sm:px-6"
       >
-        <motion.div variants={item} className="mb-8 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Where to next<span className="text-blue-600">?</span>
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              {guest ? 'Everything you need to land your next role.' : 'Pick up right where you left off.'}
-            </p>
-          </div>
+        <motion.div variants={item} className="mb-8">
+          <p className="eyebrow">{guest ? 'What you get' : 'Jump back in'}</p>
+          <h2 className="mt-2 text-3xl font-semibold text-ink">
+            {guest ? 'Four tools, one goal: your next role' : 'Where to next?'}
+          </h2>
         </motion.div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((feature, index) => (
             <FeatureCard key={feature.to} feature={feature} index={index} />
           ))}

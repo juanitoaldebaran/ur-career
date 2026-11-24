@@ -32,7 +32,7 @@ function SectionHeading({ eyebrow, title, accent, subtitle }: {
       <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
         {title} <span className="text-blue-600">{accent}</span>
       </h2>
-      <p className="mt-3 text-slate-500">{subtitle}</p>
+      <p className="mt-3 text-slate-600">{subtitle}</p>
     </motion.div>
   )
 }
@@ -90,11 +90,11 @@ export function HowItWorks() {
                 {i + 1}
               </span>
               <motion.div
-                whileHover={reduce ? undefined : { y: -4 }}
-                className="flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-[border-color,box-shadow] hover:border-blue-200 hover:shadow-lg hover:shadow-blue-600/10"
+                whileHover={reduce ? undefined : { y: -2 }}
+                className="flex-1 rounded-2xl border border-line bg-white p-5 transition-[border-color,box-shadow] hover:border-brand"
               >
                 <h3 className="font-semibold text-slate-900">{step.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-slate-500">{step.body}</p>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">{step.body}</p>
               </motion.div>
             </motion.li>
           ))}
@@ -113,12 +113,12 @@ function BentoCard({ className = '', children, dark = false }: {
   return (
     <motion.div
       variants={fadeUp}
-      whileHover={reduce ? undefined : { y: -4 }}
+      whileHover={reduce ? undefined : { y: -2 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 ${
+      className={`relative overflow-hidden rounded-2xl border p-6 sm:p-8 ${
         dark
-          ? 'border-slate-800 bg-slate-900 text-white'
-          : 'border-slate-200 bg-white text-slate-900 shadow-sm'
+          ? 'border-ink bg-ink text-white'
+          : 'border-line bg-white text-ink'
       } ${className}`}
     >
       {children}
@@ -147,7 +147,6 @@ export function WhySection() {
 
       <div className="grid gap-5 md:grid-cols-3">
         <BentoCard dark className="md:col-span-2">
-          <div aria-hidden="true" className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-blue-600/40 blur-3xl" />
           <div className="relative">
             <h3 className="text-2xl font-semibold tracking-tight">An AI coach that knows tech</h3>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-300">
@@ -177,7 +176,7 @@ export function WhySection() {
 
         <BentoCard>
           <h3 className="text-lg font-semibold tracking-tight">Track every milestone</h3>
-          <p className="mt-1.5 text-sm text-slate-500">See how far you've come on each roadmap.</p>
+          <p className="mt-1.5 text-sm text-slate-600">See how far you've come on each roadmap.</p>
           <div className="mt-6 space-y-4">
             {[72, 45, 20].map((value, i) => (
               <div key={value}>
@@ -197,7 +196,7 @@ export function WhySection() {
 
         <BentoCard>
           <h3 className="text-lg font-semibold tracking-tight">A CV that stands out</h3>
-          <p className="mt-1.5 text-sm text-slate-500">Clean structure, clear impact.</p>
+          <p className="mt-1.5 text-sm text-slate-600">Clean structure, clear impact.</p>
           <div className="mt-5 space-y-2 rounded-xl border border-slate-100 bg-slate-50 p-4">
             <div className="h-3 w-1/3 rounded bg-slate-900" />
             {[100, 85, 92, 60].map((w, i) => (
@@ -216,7 +215,7 @@ export function WhySection() {
 
         <BentoCard className="md:col-span-2">
           <h3 className="text-lg font-semibold tracking-tight">Designed around you</h3>
-          <p className="mt-1.5 text-sm text-slate-500">
+          <p className="mt-1.5 text-sm text-slate-600">
             Practice, learning and planning that adapt to where you are right now.
           </p>
           <ul className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -243,7 +242,6 @@ export function WhySection() {
 }
 
 export function CtaBanner({ guest = false }: { guest?: boolean }) {
-  const reduce = useReducedMotion()
   return (
     <motion.section
       initial={{ opacity: 0, y: 32 }}
@@ -252,13 +250,7 @@ export function CtaBanner({ guest = false }: { guest?: boolean }) {
       transition={{ duration: 0.8, ease: EASE }}
       className="mx-auto max-w-6xl px-4 pb-24 sm:px-6"
     >
-      <div className="relative isolate overflow-hidden rounded-3xl bg-slate-900 px-6 py-16 text-center sm:px-12">
-        <motion.div
-          aria-hidden="true"
-          animate={reduce ? undefined : { scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute left-1/2 top-0 -z-10 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/60 blur-3xl"
-        />
+      <div className="relative isolate overflow-hidden rounded-2xl bg-ink px-6 py-16 text-center sm:px-12">
         <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
           Ready for your next <span className="text-blue-400">career move?</span>
         </h2>
@@ -266,16 +258,12 @@ export function CtaBanner({ guest = false }: { guest?: boolean }) {
           Pick a roadmap, polish your CV, or just start a conversation. Every step counts.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-            <Link to={guest ? '/register' : '/consultation'} className="block rounded-xl bg-white px-6 py-3 text-sm font-medium text-slate-900 transition-colors hover:bg-blue-50">
-              {guest ? 'Create your free account' : 'Start a consultation'}
-            </Link>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-            <Link to={guest ? '/login' : '/cv-builder'} className="block rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10">
-              {guest ? 'Sign in' : 'Build my CV'}
-            </Link>
-          </motion.div>
+          <Link to={guest ? '/register' : '/consultation'} className="btn bg-brand px-6 py-3 text-white hover:bg-white hover:text-ink">
+            {guest ? 'Create your free account' : 'Start a consultation'}
+          </Link>
+          <Link to={guest ? '/login' : '/cv-builder'} className="btn border border-white/25 px-6 py-3 text-white hover:bg-white/10">
+            {guest ? 'Sign in' : 'Build my CV'}
+          </Link>
         </div>
       </div>
     </motion.section>
@@ -292,7 +280,7 @@ const FOOTER_LINKS = [
 export function HomeFooter() {
   return (
     <footer className="border-t border-slate-200">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-slate-600 sm:flex-row sm:px-6">
         <Link to="/" className="text-base font-bold tracking-tight">
           <span className="text-blue-600">ur</span>
           <span className="text-black">-career</span>

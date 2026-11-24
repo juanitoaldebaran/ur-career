@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { ROADMAP_CONTENT, getRoadmapStats } from '../data/roadmapContent'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -23,7 +23,7 @@ function SectionHead({ eyebrow, title, accent, children }: { eyebrow: string; ti
       <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
         {title} <span className="text-brand">{accent}</span>
       </h2>
-      {children && <p className="mt-3 text-slate-500">{children}</p>}
+      {children && <p className="mt-3 text-slate-600">{children}</p>}
     </div>
   )
 }
@@ -38,7 +38,6 @@ const PREVIEW_TOPICS = [
 ]
 
 export function ProductPreview() {
-  const reduce = useReducedMotion()
   return (
     <section className="mx-auto max-w-4xl px-4 pb-24 sm:px-6">
       <motion.div
@@ -48,13 +47,12 @@ export function ProductPreview() {
         transition={{ duration: 0.9, ease: EASE }}
         className="relative"
       >
-        <div aria-hidden="true" className="absolute -inset-x-6 -bottom-6 top-10 -z-10 rounded-[2rem] bg-brand/10 blur-3xl" />
-        <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_30px_80px_-30px_rgba(10,14,26,0.35)]">
+        <div className="overflow-hidden rounded-2xl border border-line bg-white">
           <div className="flex items-center gap-1.5 border-b border-line bg-slate-50 px-4 py-3">
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-            <span className="ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[11px] text-slate-400">ur-career.app/roadmap/backend</span>
+            <span className="ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[11px] text-slate-500">ur-career.app/roadmap/backend</span>
           </div>
 
           <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[1.2fr_1fr]">
@@ -62,7 +60,7 @@ export function ProductPreview() {
               <p className="eyebrow">Roadmap</p>
               <h3 className="mt-1 text-xl font-semibold">Backend Software Engineer</h3>
               <div className="mt-4">
-                <div className="flex justify-between font-mono text-[11px] text-slate-400">
+                <div className="flex justify-between font-mono text-[11px] text-slate-500">
                   <span>3 / 5 topics</span>
                   <span>60%</span>
                 </div>
@@ -100,7 +98,7 @@ export function ProductPreview() {
                       )}
                     </span>
                     <span className="flex-1 font-medium">{topic.title}</span>
-                    <span className={`font-mono text-[10px] uppercase ${topic.done ? 'text-green-600' : topic.active ? 'text-brand' : 'text-slate-400'}`}>
+                    <span className={`font-mono text-[10px] uppercase ${topic.done ? 'text-green-600' : topic.active ? 'text-brand' : 'text-slate-500'}`}>
                       {topic.done ? 'Done' : topic.active ? 'Learning' : 'Pending'}
                     </span>
                   </motion.li>
@@ -108,26 +106,24 @@ export function ProductPreview() {
               </ul>
             </div>
 
-            <motion.div
-              animate={reduce ? undefined : { y: [0, -6, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+            <div
               className="hidden rounded-xl border border-line bg-slate-50/70 p-5 md:block"
             >
-              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">Topic</p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Topic</p>
               <h4 className="mt-1 font-display text-lg font-semibold">REST principles</h4>
-              <p className="mt-2 text-[13px] leading-relaxed text-slate-500">
+              <p className="mt-2 text-[13px] leading-relaxed text-slate-600">
                 Design APIs around resources, standard HTTP verbs, status codes and stateless requests.
               </p>
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-wider text-slate-400">Resources · 2</p>
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-wider text-slate-500">Resources · 2</p>
               <div className="mt-2 space-y-1.5">
                 {['REST API tutorial', 'Google API design guide'].map((r) => (
                   <div key={r} className="flex items-center justify-between rounded-lg border border-line bg-white px-3 py-2 text-[13px] font-medium">
                     {r}
-                    <span className="text-slate-400">↗</span>
+                    <span className="text-slate-500">↗</span>
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -193,7 +189,7 @@ export function StatsBand() {
             className="bg-white px-6 py-8 text-center"
           >
             <p className="font-display text-4xl font-semibold">{s.value}</p>
-            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">{s.label}</p>
+            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500">{s.label}</p>
           </motion.div>
         ))}
       </div>
@@ -222,7 +218,7 @@ export function CareerExplorer() {
               aria-selected={selected}
               onClick={() => setActive(career.slug)}
               className={`relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                selected ? 'text-white' : 'text-slate-500 hover:text-ink'
+                selected ? 'text-white' : 'text-slate-600 hover:text-ink'
               }`}
             >
               {selected && (
@@ -247,7 +243,7 @@ export function CareerExplorer() {
           >
             <div>
               <h3 className="text-2xl font-semibold">{content.tagline}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">{content.description}</p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">{content.description}</p>
               <div className="mt-6 flex gap-8 border-y border-line py-4">
                 {[
                   { v: stats.topics, l: 'Topics' },
@@ -256,7 +252,7 @@ export function CareerExplorer() {
                 ].map((s) => (
                   <div key={s.l}>
                     <p className="font-display text-2xl font-semibold leading-none">{s.v}</p>
-                    <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-400">{s.l}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">{s.l}</p>
                   </div>
                 ))}
               </div>
@@ -272,7 +268,7 @@ export function CareerExplorer() {
                 { label: 'Tools & platforms', items: content.tools, chip: '' },
               ].map((group) => (
                 <div key={group.label}>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{group.label}</p>
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{group.label}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {group.items.map((item, i) => (
                       <motion.span
@@ -321,7 +317,7 @@ export function Faq() {
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-semibold transition-colors hover:text-brand"
                 >
                   {item.q}
-                  <motion.span animate={{ rotate: isOpen ? 45 : 0 }} transition={{ duration: 0.2 }} className="text-xl leading-none text-slate-400">
+                  <motion.span animate={{ rotate: isOpen ? 45 : 0 }} transition={{ duration: 0.2 }} className="text-xl leading-none text-slate-500">
                     +
                   </motion.span>
                 </button>
@@ -335,7 +331,7 @@ export function Faq() {
                     transition={{ duration: 0.3, ease: EASE }}
                     className="overflow-hidden"
                   >
-                    <p className="px-5 pb-5 text-sm leading-relaxed text-slate-500">{item.a}</p>
+                    <p className="px-5 pb-5 text-sm leading-relaxed text-slate-600">{item.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
