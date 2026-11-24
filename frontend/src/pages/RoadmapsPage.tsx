@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 import { listRoadmaps, type RoadmapSummary } from '../lib/api'
+import { TechChip } from '../components/TechIcon'
 import { ROADMAP_CONTENT, getRoadmapStats } from '../data/roadmapContent'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -25,9 +26,7 @@ function ChipGroup({ label, items, variant, max }: { label: string; items: strin
       <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
       <div className="mt-1.5 flex flex-wrap gap-1.5">
         {shown.map((item) => (
-          <span key={item} className={`chip ${variant}`}>
-            {item}
-          </span>
+          <TechChip key={item} name={item} variant={variant} />
         ))}
         {max && items.length > max && <span className="chip chip-brand">+{items.length - max}</span>}
       </div>

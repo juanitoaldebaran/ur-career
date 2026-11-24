@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../lib/AuthContext'
 import { getRoadmap, updateNodeStatus, type RoadmapNode } from '../lib/api'
+import { TechChip } from '../components/TechIcon'
 import { ROADMAP_CONTENT, getRoadmapStats, type Resource, type ResourceType } from '../data/roadmapContent'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -276,9 +277,13 @@ export default function RoadmapDetailPage() {
                         </p>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                           {g.items.map((item) => (
-                            <span key={item} className={`chip ${g.chip}`}>
-                              {item}
-                            </span>
+                            g.label === 'Core skills' ? (
+                              <span key={item} className={`chip ${g.chip}`}>
+                                {item}
+                              </span>
+                            ) : (
+                              <TechChip key={item} name={item} variant={g.chip} />
+                            )
                           ))}
                         </div>
                       </div>
