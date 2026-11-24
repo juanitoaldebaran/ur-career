@@ -163,7 +163,7 @@ export default function ConsultationPage() {
       />
 
       <section className={`flex min-w-0 flex-1 flex-col md:transition-[margin] md:duration-200 motion-reduce:transition-none ${expanded ? 'md:ml-[240px]' : 'md:ml-14'}`}>
-        <div className="flex items-center gap-2 border-b border-line px-4 py-2 md:hidden">
+        <div className="flex items-center gap-2 px-3 py-2 md:hidden">
           <button
             ref={openerRef}
             onClick={() => setDrawer(true)}
@@ -184,7 +184,7 @@ export default function ConsultationPage() {
 
         <div className={landing ? 'flex flex-1 flex-col items-center justify-center pb-12' : 'flex min-h-0 flex-1 flex-col'}>
           {landing ? (
-            <h1 className="mb-8 px-4 text-center text-3xl font-semibold sm:text-4xl">
+            <h1 className="mb-8 px-4 text-center text-[1.75rem] font-semibold leading-tight sm:text-4xl">
               What are you <span className="text-brand">working toward?</span>
             </h1>
           ) : chat.threadError && !chat.thread ? (
@@ -206,7 +206,7 @@ export default function ConsultationPage() {
             />
           )}
 
-          <div className={`mx-auto w-full max-w-[720px] px-4 ${landing ? '' : 'pb-[max(1rem,env(safe-area-inset-bottom))]'}`}>
+          <div className={`mx-auto w-full max-w-[768px] px-4 ${landing ? '' : 'pb-[max(1rem,env(safe-area-inset-bottom))]'}`}>
             {chat.error && (
               <div role="alert" className="mb-3 flex items-start justify-between gap-3 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700">
                 <span>{chat.error}</span>
@@ -219,12 +219,12 @@ export default function ConsultationPage() {
           </div>
 
           {landing && (
-            <ul className="mt-5 flex w-full max-w-[720px] flex-wrap justify-center gap-2 px-4">
+            <ul className="mt-4 flex w-full max-w-[768px] flex-wrap justify-center gap-2 px-4">
               {starters.map((text) => (
                 <li key={text}>
                   <button
                     onClick={() => submit(text)}
-                    className="rounded-full border border-line bg-white px-4 py-2 text-[13px] font-medium text-slate-700 transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand"
+                    className="min-h-10 rounded-full border border-line bg-white px-4 py-2 text-sm text-slate-700 transition-colors hover:border-brand/50 hover:bg-brand-soft hover:text-ink"
                   >
                     {text}
                   </button>
