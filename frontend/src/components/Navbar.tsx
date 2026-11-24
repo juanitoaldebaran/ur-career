@@ -21,7 +21,7 @@ const NAV_ITEMS: { label: string; to: string; icon: IconName }[] = [
 ]
 
 function Divider() {
-  return <span aria-hidden="true" className="mx-1.5 hidden h-5 w-px shrink-0 bg-slate-200 md:block" />
+  return <span aria-hidden="true" className="mx-1.5 hidden h-5 w-px shrink-0 bg-line md:block" />
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -68,7 +68,7 @@ export default function Navbar() {
       <motion.div
         aria-hidden="true"
         style={{ scaleX: progress }}
-        className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left bg-blue-600"
+        className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left bg-brand"
       />
 
       {/* Centred on the content area: --sidebar-w is set by pages that have a sidebar
@@ -79,7 +79,7 @@ export default function Navbar() {
         transition={{ duration: reduce ? 0 : 0.5, ease: EASE }}
         className="@container pointer-events-none fixed inset-x-0 top-4 z-20 flex justify-center pl-[calc(var(--sidebar-w,0px)_+_1rem)] pr-4 transition-[padding-left] duration-200 ease-out motion-reduce:transition-none"
       >
-        <div className="pointer-events-auto flex w-full max-w-full items-center justify-between gap-1 rounded-full border border-slate-200 bg-white p-1.5 shadow-[0_2px_10px_rgba(15,23,42,0.04)] md:w-auto md:justify-start">
+        <div className="pointer-events-auto flex w-full max-w-full items-center justify-between gap-1 rounded-full border border-line/80 bg-transparent p-1.5 backdrop-blur-md md:w-auto md:justify-start">
           <div className="flex items-center pl-2.5 pr-1">
             <Logo labelClassName="hidden @[30rem]:inline" />
           </div>
@@ -96,13 +96,13 @@ export default function Navbar() {
                   aria-label={item.label}
                   title={item.label}
                   className={`relative isolate flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium transition-colors duration-150 @[44rem]:px-3.5 ${
-                    active ? 'text-white' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+                    active ? 'text-white' : 'text-slate-600 hover:bg-ink/5 hover:text-ink'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="nav-active"
-                      className="absolute inset-0 -z-10 rounded-full bg-brand shadow-xs"
+                      className="absolute inset-0 -z-10 rounded-full bg-brand"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -126,9 +126,9 @@ export default function Navbar() {
           </div>
 
           <motion.button
-            whileTap={{ scale: 0.88 }}
+            whileTap={{ scale: 0.92 }}
             onClick={() => setMobileOpen((value) => !value)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-100 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-ink/5 md:hidden"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
           >
@@ -169,7 +169,7 @@ export default function Navbar() {
               exit={{ opacity: 0, y: -12, scale: 0.97 }}
               transition={{ duration: 0.28, ease: EASE }}
               style={{ transformOrigin: 'top center' }}
-              className="fixed inset-x-4 top-20 z-10 flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl md:hidden"
+              className="fixed inset-x-4 top-20 z-10 flex flex-col gap-1 rounded-2xl border border-line bg-white p-3 md:hidden"
             >
               {NAV_ITEMS.map((navItem, index) => {
                 const active = isActivePath(pathname, navItem.to)
@@ -201,7 +201,7 @@ export default function Navbar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="mt-1 flex flex-col gap-1 border-t border-slate-200 pt-3"
+                className="mt-1 flex flex-col gap-1 border-t border-line pt-3"
               >
                 {user ? (
                   <UserMenu inline />

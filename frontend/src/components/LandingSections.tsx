@@ -18,7 +18,7 @@ const CAREERS: { slug: string; label: string }[] = [
 
 function SectionHead({ eyebrow, title, accent, children }: { eyebrow: string; title: string; accent: string; children?: string }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
+    <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-12">
       <p className="eyebrow">{eyebrow}</p>
       <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
         {title} <span className="text-brand">{accent}</span>
@@ -39,7 +39,7 @@ const PREVIEW_TOPICS = [
 
 export function ProductPreview() {
   return (
-    <section className="mx-auto max-w-4xl px-4 pb-24 sm:px-6">
+    <section className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 sm:pb-24">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ export function ProductPreview() {
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
             <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-            <span className="ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[11px] text-slate-500">ur-career.app/roadmap/backend</span>
+            <span className="ml-3 min-w-0 truncate rounded-md bg-white px-3 py-0.5 font-mono text-[11px] text-slate-500">ur-career.app/roadmap/backend</span>
           </div>
 
           <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[1.2fr_1fr]">
@@ -144,7 +144,7 @@ export function TechMarquee() {
     ))
 
   return (
-    <section className="pb-24" aria-label="Languages and frameworks you will learn">
+    <section className="pb-16 sm:pb-24" aria-label="Languages and frameworks you will learn">
       <p className="eyebrow mb-6 text-center">Learn the stack companies hire for</p>
       <div className="marquee overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
         <div className="marquee-track">
@@ -177,7 +177,7 @@ export function StatsBand() {
   ]
 
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-28 sm:px-6">
+    <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-28">
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-4">
         {stats.map((s, i) => (
           <motion.div
@@ -203,7 +203,7 @@ export function CareerExplorer() {
   const stats = getRoadmapStats(active)
 
   return (
-    <section className="mx-auto max-w-5xl px-4 pb-28 sm:px-6">
+    <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6 sm:pb-28">
       <SectionHead eyebrow="Careers" title="Pick a career," accent="see the stack">
         Eight roadmaps, each with the languages, frameworks and tools you will actually use.
       </SectionHead>
@@ -217,7 +217,7 @@ export function CareerExplorer() {
               role="tab"
               aria-selected={selected}
               onClick={() => setActive(career.slug)}
-              className={`relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`relative shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
                 selected ? 'text-white' : 'text-slate-600 hover:text-ink'
               }`}
             >
@@ -230,7 +230,7 @@ export function CareerExplorer() {
         })}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-line bg-white p-6 sm:p-8">
+      <div className="mt-6 rounded-2xl border border-line bg-white p-5 sm:mt-8 sm:p-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={active}
@@ -256,7 +256,7 @@ export function CareerExplorer() {
                   </div>
                 ))}
               </div>
-              <Link to="/register" className="btn btn-primary mt-6">
+              <Link to="/register" className="btn btn-primary mt-6 w-full sm:w-auto">
                 Start this roadmap →
               </Link>
             </div>
@@ -303,7 +303,7 @@ const FAQS = [
 export function Faq() {
   const [open, setOpen] = useState<number | null>(0)
   return (
-    <section className="mx-auto max-w-3xl px-4 pb-28 sm:px-6">
+    <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 sm:pb-28">
       <SectionHead eyebrow="FAQ" title="Questions," accent="answered" />
       <div className="divide-y divide-line rounded-2xl border border-line bg-white">
         {FAQS.map((item, i) => {
