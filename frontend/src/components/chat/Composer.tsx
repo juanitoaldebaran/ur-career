@@ -61,7 +61,7 @@ export default function Composer({
 
   return (
     <div className="w-full">
-      <div className="flex items-end gap-2 rounded-3xl border border-slate-200 bg-white py-2 pl-5 pr-2 shadow-[0_1px_2px_rgba(10,14,26,0.04),0_10px_28px_-14px_rgba(10,14,26,0.18)] transition focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10">
+      <div className="flex items-end gap-2 rounded-[28px] border border-line bg-white py-2 pl-5 pr-2.5 shadow-[0_2px_16px_-6px_rgba(10,14,26,0.14)] transition-[border-color,box-shadow] focus-within:border-brand/60 focus-within:shadow-[0_4px_24px_-8px_rgba(37,99,235,0.25)]">
         <label htmlFor="chat-input" className="sr-only">
           Message your career coach
         </label>
@@ -76,7 +76,7 @@ export default function Composer({
             onChange(e.target.value)
           }}
           onKeyDown={onKeyDown}
-          placeholder={listening ? 'Listening… speak now' : 'Ask about your career…'}
+          placeholder={listening ? 'Listening… speak now' : 'Message your career coach'}
           className="max-h-48 min-h-[2.75rem] flex-1 resize-none bg-transparent py-2.5 text-base leading-6 text-ink outline-none placeholder:text-slate-500"
         />
         {supported && !busy && (

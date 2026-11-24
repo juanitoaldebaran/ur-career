@@ -119,7 +119,7 @@ function blocks(source: string): ReactNode[] {
 }
 
 function Markdown({ text }: { text: string }) {
-  return <div className="space-y-4 break-words text-[15px] leading-[1.65]">{blocks(text)}</div>
+  return <div className="space-y-4 break-words text-base leading-[1.7] text-ink">{blocks(text)}</div>
 }
 
 export default memo(Markdown)

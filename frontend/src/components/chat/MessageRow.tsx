@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import type { UIMessage } from '../../hooks/useChat'
+import { useAuth } from '../../lib/AuthContext'
 import Markdown from './Markdown'
 
 function CopyButton({ text }: { text: string }) {
@@ -34,6 +35,8 @@ const EASE = [0.22, 1, 0.36, 1] as const
 
 function MessageRow({ message, waiting }: { message: UIMessage; waiting: boolean }) {
   const reduce = useReducedMotion()
+  const { user } = useAuth()
+  const initial = user?.email.charAt(0).toUpperCase() ?? 'U'
   // Only messages sent in this session animate in. Loaded history appears instantly.
   const enter = {
     initial: message.clientKey && !reduce ? { opacity: 0, y: 6 } : false,
@@ -43,10 +46,16 @@ function MessageRow({ message, waiting }: { message: UIMessage; waiting: boolean
 
   if (message.role === 'user') {
     return (
-      <motion.div className="flex justify-end" {...enter}>
-        <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-brand-soft px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+      <motion.div className="flex items-start justify-end gap-3" {...enter}>
+        <p className="max-w-[calc(100%-2.75rem)] sm:max-w-[85%] whitespace-pre-wrap break-words rounded-3xl bg-brand-soft px-5 py-3 text-base leading-relaxed text-ink">
           {message.content}
         </p>
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-[13px] font-semibold leading-none text-white"
+        >
+          {initial}
+        </span>
       </motion.div>
     )
   }
@@ -57,11 +66,11 @@ function MessageRow({ message, waiting }: { message: UIMessage; waiting: boolean
     <motion.div className="group flex gap-3" {...enter}>
       <span
         aria-hidden="true"
-        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand text-[13px] font-bold leading-none text-white"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-[13px] font-bold leading-none text-white"
       >
         u
       </span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 pt-1">
         {message.content ? (
           <Markdown text={message.content} />
         ) : waiting ? (
@@ -77,7 +86,7 @@ function MessageRow({ message, waiting }: { message: UIMessage; waiting: boolean
         {message.status === 'error' && <p className="mt-2 text-sm text-red-700">Couldn&apos;t get a response.</p>}
 
         {!streaming && message.content && (
-          <div className="mt-2 -ml-2 flex opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+          <div className="mt-1.5 -ml-2 flex opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
             <CopyButton text={message.content} />
           </div>
         )}

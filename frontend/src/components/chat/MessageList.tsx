@@ -94,7 +94,7 @@ export default function MessageList({
         aria-busy={phase !== null}
         className="h-full overflow-y-auto overscroll-contain"
       >
-        <div className="mx-auto flex w-full max-w-[720px] flex-col gap-7 px-4 pb-6 pt-6">
+        <div className="mx-auto flex w-full max-w-[768px] flex-col gap-8 px-4 pb-8 pt-8">
           <div ref={top} aria-hidden="true" />
           {loadingOlder && (
             <div className="flex justify-center text-slate-500">
