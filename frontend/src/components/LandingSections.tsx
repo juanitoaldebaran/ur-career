@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
+import { TechChip, TechIcon } from './TechIcon'
 import { ROADMAP_CONTENT, getRoadmapStats } from '../data/roadmapContent'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -138,7 +139,8 @@ export function TechMarquee() {
   )
   const row = (suffix: string) =>
     items.map((name) => (
-      <span key={name + suffix} className="mx-2 shrink-0 rounded-full border border-line bg-white px-4 py-1.5 font-mono text-xs text-slate-600">
+      <span key={name + suffix} className="mx-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 font-mono text-xs text-slate-600">
+        <TechIcon name={name} className="h-4 w-4" />
         {name}
       </span>
     ))
@@ -276,9 +278,9 @@ export function CareerExplorer() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.03, duration: 0.25 }}
-                        className={`chip ${group.chip}`}
+                        className="inline-flex"
                       >
-                        {item}
+                        <TechChip name={item} variant={group.chip} />
                       </motion.span>
                     ))}
                   </div>
