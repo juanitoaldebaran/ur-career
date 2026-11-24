@@ -27,7 +27,7 @@ function SectionHeading({ eyebrow, title, accent, subtitle }: {
   subtitle: string
 }) {
   return (
-    <motion.div variants={fadeUp} className="mx-auto mb-12 max-w-2xl text-center">
+    <motion.div variants={fadeUp} className="mx-auto mb-8 max-w-2xl text-center sm:mb-12">
       <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">{eyebrow}</span>
       <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
         {title} <span className="text-blue-600">{accent}</span>
@@ -56,7 +56,7 @@ export function HowItWorks() {
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: '-80px' }}
-      className="mx-auto max-w-4xl px-4 pb-28 sm:px-6"
+      className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 sm:pb-28"
     >
       <SectionHeading
         eyebrow="How it works"
@@ -115,7 +115,7 @@ function BentoCard({ className = '', children, dark = false }: {
       variants={fadeUp}
       whileHover={reduce ? undefined : { y: -2 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className={`relative overflow-hidden rounded-2xl border p-6 sm:p-8 ${
+      className={`relative overflow-hidden rounded-2xl border p-5 sm:p-8 ${
         dark
           ? 'border-ink bg-ink text-white'
           : 'border-line bg-white text-ink'
@@ -136,7 +136,7 @@ export function WhySection() {
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: '-80px' }}
-      className="mx-auto max-w-6xl px-4 pb-28 sm:px-6"
+      className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-28"
     >
       <SectionHeading
         eyebrow="Why ur-career"
@@ -248,16 +248,16 @@ export function CtaBanner({ guest = false }: { guest?: boolean }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.8, ease: EASE }}
-      className="mx-auto max-w-6xl px-4 pb-24 sm:px-6"
+      className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24"
     >
-      <div className="relative isolate overflow-hidden rounded-2xl bg-ink px-6 py-16 text-center sm:px-12">
+      <div className="relative isolate overflow-hidden rounded-2xl bg-ink px-5 py-12 text-center sm:px-12 sm:py-16">
         <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
           Ready for your next <span className="text-blue-400">career move?</span>
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-slate-300">
           Pick a roadmap, polish your CV, or just start a conversation. Every step counts.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link to={guest ? '/register' : '/consultation'} className="btn bg-brand px-6 py-3 text-white hover:bg-white hover:text-ink">
             {guest ? 'Create your free account' : 'Start a consultation'}
           </Link>
@@ -285,9 +285,9 @@ export function HomeFooter() {
           <span className="text-blue-600">ur</span>
           <span className="text-black">-career</span>
         </Link>
-        <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <nav className="flex flex-wrap justify-center gap-x-5">
           {FOOTER_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className="transition-colors hover:text-blue-600">
+            <Link key={link.to} to={link.to} className="inline-flex min-h-11 items-center px-1 transition-colors hover:text-brand">
               {link.label}
             </Link>
           ))}

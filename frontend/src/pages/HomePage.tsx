@@ -106,7 +106,7 @@ function FeatureCard({ feature, index }: { feature: Feature; index: number }) {
       <motion.div whileHover={reduce ? undefined : { y: -2 }} transition={{ duration: 0.2 }} className="h-full">
         <Link
           to={feature.to}
-          className="group flex h-full flex-col gap-5 rounded-2xl border border-line bg-white p-6 transition-colors duration-200 hover:border-brand"
+          className="group flex h-full flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:gap-5 sm:p-6 transition-colors duration-200 hover:border-brand"
         >
           <div className="flex items-center justify-between">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand transition-colors duration-200 group-hover:bg-brand group-hover:text-white">
@@ -144,7 +144,7 @@ interface HeroProps {
 function Hero({ eyebrow, headline, lead, primary, secondary }: HeroProps) {
   return (
     <section className="relative border-b border-line bg-white">
-      <div className="mx-auto flex min-h-[64svh] max-w-6xl flex-col justify-center px-4 py-16 sm:px-6">
+      <div className="mx-auto flex min-h-[calc(100svh-6rem)] max-w-6xl flex-col justify-center px-4 py-12 sm:min-h-[64svh] sm:px-6 sm:py-16">
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,7 +154,7 @@ function Hero({ eyebrow, headline, lead, primary, secondary }: HeroProps) {
           {eyebrow}
         </motion.p>
 
-        <h1 className="mt-4 min-h-[1.1em] max-w-3xl text-4xl font-semibold leading-[1.05] text-balance text-ink sm:text-6xl">
+        <h1 className="mt-4 min-h-[1.1em] max-w-3xl text-[2.5rem] font-semibold leading-[1.05] text-balance text-ink sm:text-6xl">
           {headline}
         </h1>
 
@@ -214,7 +214,7 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
       />
 
       {guest && (
-        <div className="pt-16">
+        <div className="pt-10 sm:pt-16">
           <ProductPreview />
         </div>
       )}
@@ -225,11 +225,11 @@ export function HomeContent({ guest = false }: { guest?: boolean }) {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: '-80px' }}
-        className="mx-auto max-w-6xl px-4 py-16 sm:px-6"
+        className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16"
       >
         <motion.div variants={item} className="mb-8">
           <p className="eyebrow">{guest ? 'What you get' : 'Jump back in'}</p>
-          <h2 className="mt-2 text-3xl font-semibold text-ink">
+          <h2 className="mt-2 text-2xl font-semibold text-ink sm:text-3xl">
             {guest ? 'Four tools, one goal: your next role' : 'Where to next?'}
           </h2>
         </motion.div>
