@@ -73,7 +73,7 @@ function IconButton({
       disabled={disabled}
       aria-label={label}
       title={label}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent ${
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-600 sm:h-9 sm:w-9 transition-colors hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent ${
         danger ? 'hover:!bg-red-50 hover:text-red-700' : 'hover:text-ink'
       }`}
     >
@@ -101,9 +101,9 @@ function EntryCard({
 }) {
   const title = name.trim() || `${fallback} ${index + 1}`
   return (
-    <div className="rounded-2xl border border-line bg-white p-4">
+    <div className="rounded-2xl border border-line bg-white p-4 transition-colors focus-within:border-brand/50">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="min-w-0 truncate text-sm font-medium text-ink">{title}</p>
+        <p className="min-w-0 truncate text-sm font-semibold text-ink">{title}</p>
         <div className="flex shrink-0 items-center">
           <IconButton label={`Move up: ${title}`} icon="up" disabled={index === 0} onClick={() => onMove(-1)} />
           <IconButton label={`Move down: ${title}`} icon="down" disabled={index === count - 1} onClick={() => onMove(1)} />
@@ -139,7 +139,7 @@ function Bullets({ bullets, onChange }: { bullets: string[]; onChange: (next: st
         <button
           type="button"
           onClick={() => onChange([...bullets, ''])}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-brand-soft"
+          className="mt-2 inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-brand transition-colors hover:bg-brand-soft"
         >
           <Icon name="plus" className="h-4 w-4" />
           Add bullet point
@@ -150,6 +150,7 @@ function Bullets({ bullets, onChange }: { bullets: string[]; onChange: (next: st
 }
 
 function Section({
+  step,
   title,
   hint,
   children,
@@ -157,6 +158,7 @@ function Section({
   addLabel,
   canAdd = true,
 }: {
+  step: number
   title: string
   hint?: string
   children: ReactNode
@@ -165,14 +167,15 @@ function Section({
   canAdd?: boolean
 }) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-4 pt-8 first:pt-0">
       <div>
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {hint && <p className="mt-0.5 text-sm text-slate-500">{hint}</p>}
+        <p className="font-mono text-[11px] tabular-nums text-brand">0{step}</p>
+        <h2 className="mt-1 text-xl font-semibold">{title}</h2>
+        {hint && <p className="mt-1 text-sm text-slate-600">{hint}</p>}
       </div>
       {children}
       {onAdd && (
-        <button type="button" onClick={onAdd} disabled={!canAdd} className="btn btn-ghost !py-2 !text-sm disabled:opacity-50">
+        <button type="button" onClick={onAdd} disabled={!canAdd} className="btn btn-ghost !text-sm disabled:opacity-50">
           <Icon name="plus" className="h-4 w-4" />
           {canAdd ? addLabel : 'Limit reached'}
         </button>
@@ -187,8 +190,8 @@ export default function CvEditor({ data, onChange }: { data: CvData; onChange: (
   const b = data.basics
 
   return (
-    <div className="space-y-10">
-      <Section title="Your details" hint="Shown at the top of your CV.">
+    <div className="divide-y divide-line">
+      <Section step={1} title="Your details" hint="Shown at the top of your CV.">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Full name" value={b.name} onChange={(v) => setBasics({ name: v })} autoComplete="name" className="sm:col-span-2" />
           <Field label="Phone" value={b.phone} onChange={(v) => setBasics({ phone: v })} autoComplete="tel" />
@@ -200,6 +203,7 @@ export default function CvEditor({ data, onChange }: { data: CvData; onChange: (
       </Section>
 
       <Section
+        step={2}
         title="Education"
         onAdd={() => set('education', [...data.education, emptyEducation()])}
         addLabel="Add education"
@@ -228,6 +232,7 @@ export default function CvEditor({ data, onChange }: { data: CvData; onChange: (
       </Section>
 
       <Section
+        step={3}
         title="Experience"
         onAdd={() => set('experience', [...data.experience, emptyExperience()])}
         addLabel="Add experience"
@@ -257,6 +262,7 @@ export default function CvEditor({ data, onChange }: { data: CvData; onChange: (
       </Section>
 
       <Section
+        step={4}
         title="Projects"
         onAdd={() => set('projects', [...data.projects, emptyProject()])}
         addLabel="Add project"
@@ -285,6 +291,7 @@ export default function CvEditor({ data, onChange }: { data: CvData; onChange: (
       </Section>
 
       <Section
+        step={5}
         title="Technical skills"
         hint="Group them however you like. Each group is one line on your CV."
         onAdd={() => set('skills', [...data.skills, emptySkillGroup()])}
