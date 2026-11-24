@@ -13,7 +13,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div>
       <p className="font-display text-2xl font-semibold leading-none">{value}</p>
-      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
     </div>
   )
 }
@@ -22,7 +22,7 @@ function ChipGroup({ label, items, variant, max }: { label: string; items: strin
   const shown = max ? items.slice(0, max) : items
   return (
     <div>
-      <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
       <div className="mt-1.5 flex flex-wrap gap-1.5">
         {shown.map((item) => (
           <span key={item} className={`chip ${variant}`}>
@@ -49,7 +49,7 @@ function RoadmapCard({ roadmap, index, instant }: { roadmap: RoadmapSummary; ind
     >
       <Link
         to={`/roadmap/${roadmap.slug}`}
-        className="group flex h-full flex-col rounded-2xl border border-line bg-white p-6 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-ink hover:shadow-[0_18px_40px_-20px_rgba(10,14,26,0.35)]"
+        className="group flex h-full flex-col rounded-2xl border border-line bg-white p-5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-brand"
       >
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-xl font-semibold">{roadmap.title}</h2>
@@ -61,7 +61,7 @@ function RoadmapCard({ roadmap, index, instant }: { roadmap: RoadmapSummary; ind
           </span>
         </div>
 
-        {content && <p className="mt-2 text-sm leading-relaxed text-slate-500">{content.tagline}</p>}
+        {content && <p className="mt-2 text-sm leading-relaxed text-slate-600">{content.tagline}</p>}
 
         <div className="mt-5 flex gap-8 border-y border-line py-4">
           <Stat value={roadmap.node_count} label="Topics" />
@@ -131,10 +131,10 @@ export default function RoadmapsPage() {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
         <p className="eyebrow">Roadmaps</p>
-        <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">
+        <h1 className="mt-2 text-[2rem] font-semibold leading-tight sm:text-5xl">
           Pick a path, <span className="text-brand">learn in order</span>
         </h1>
-        <p className="mt-2 max-w-xl text-sm text-slate-500">
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">
           Every roadmap lists the languages and frameworks you will learn, plus a short explanation and hand-picked resources for each topic.
         </p>
       </motion.div>
@@ -142,7 +142,7 @@ export default function RoadmapsPage() {
       <div className="relative w-full shrink-0 sm:w-60">
         <svg
           viewBox="0 0 24 24"
-          className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -161,7 +161,7 @@ export default function RoadmapsPage() {
           placeholder="Search roadmaps…"
           aria-label="Search roadmaps"
           aria-keyshortcuts="Shift+Space"
-          className="w-full rounded-lg border border-line bg-white py-2 pl-9 pr-[4.5rem] text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10 [&::-webkit-search-cancel-button]:hidden"
+          className="w-full rounded-lg border border-line bg-white py-2.5 pl-9 pr-[4.5rem] text-sm text-ink outline-none transition placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/10 [&::-webkit-search-cancel-button]:hidden"
         />
         <AnimatePresence mode="wait" initial={false}>
           {query ? (
@@ -175,7 +175,7 @@ export default function RoadmapsPage() {
                 setQuery('')
                 inputRef.current?.focus()
               }}
-              className="absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              className="absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
               aria-label="Clear search"
             >
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -208,19 +208,19 @@ export default function RoadmapsPage() {
       </div>
       </div>
       {roadmaps && query.trim() && (
-        <p className="mt-2 text-xs text-slate-400" aria-live="polite">
+        <p className="mt-2 text-xs text-slate-500" aria-live="polite">
           {filtered?.length ?? 0} of {roadmaps.length} roadmaps
         </p>
       )}
 
       {error && <p className="mt-8 text-sm text-red-600">{error}</p>}
-      {!error && !roadmaps && <p className="mt-8 text-sm text-slate-400">Loading…</p>}
-      {roadmaps && roadmaps.length === 0 && <p className="mt-8 text-sm text-slate-400">No roadmaps yet.</p>}
+      {!error && !roadmaps && <p className="mt-8 text-sm text-slate-500">Loading…</p>}
+      {roadmaps && roadmaps.length === 0 && <p className="mt-8 text-sm text-slate-500">No roadmaps yet.</p>}
       {roadmaps && roadmaps.length > 0 && filtered?.length === 0 && (
         <p className="mt-8 text-sm text-slate-500">No roadmaps match “{query.trim()}”.</p>
       )}
 
-      <motion.div layout className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <motion.div layout className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
         <AnimatePresence mode="popLayout">
           {filtered?.map((roadmap, i) => (
             <RoadmapCard key={roadmap.id} roadmap={roadmap} index={i} instant={query.trim() !== ''} />

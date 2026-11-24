@@ -11,7 +11,7 @@ type Status = 'pending' | 'in_progress' | 'done'
 type Filter = 'all' | Status
 
 const STATUS: Record<Status, { label: string; text: string; soft: string }> = {
-  pending: { label: 'To do', text: 'text-slate-400', soft: 'bg-slate-100 text-slate-500' },
+  pending: { label: 'To do', text: 'text-slate-500', soft: 'bg-slate-100 text-slate-500' },
   in_progress: { label: 'Learning', text: 'text-brand', soft: 'bg-brand-soft text-brand' },
   done: { label: 'Done', text: 'text-emerald-600', soft: 'bg-emerald-50 text-emerald-700' },
 }
@@ -24,12 +24,12 @@ const FILTERS: { id: Filter; label: string }[] = [
 ]
 
 const TYPE_META: Record<ResourceType, { label: string; badge: string }> = {
-  docs: { label: 'Docs', badge: 'bg-sky-50 text-sky-700' },
-  course: { label: 'Courses', badge: 'bg-violet-50 text-violet-700' },
-  video: { label: 'Videos', badge: 'bg-rose-50 text-rose-700' },
-  article: { label: 'Articles', badge: 'bg-amber-50 text-amber-700' },
-  practice: { label: 'Practice', badge: 'bg-emerald-50 text-emerald-700' },
-  book: { label: 'Books', badge: 'bg-orange-50 text-orange-700' },
+  docs: { label: 'Docs', badge: 'bg-brand-soft text-brand' },
+  course: { label: 'Courses', badge: 'bg-slate-100 text-slate-600' },
+  video: { label: 'Videos', badge: 'bg-slate-100 text-slate-600' },
+  article: { label: 'Articles', badge: 'bg-slate-100 text-slate-600' },
+  practice: { label: 'Practice', badge: 'bg-ink text-white' },
+  book: { label: 'Books', badge: 'bg-slate-100 text-slate-600' },
 }
 
 const asStatus = (value: string): Status => (value in STATUS ? (value as Status) : 'pending')
@@ -210,15 +210,15 @@ export default function RoadmapDetailPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE }}
-        className="mt-5 overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-brand-soft via-white to-white p-6 sm:p-8"
+        className="mt-5 overflow-hidden rounded-2xl border border-line bg-white p-5 sm:p-8"
       >
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
             <p className="eyebrow">Roadmap</p>
-            <h1 className="mt-2 text-3xl font-semibold capitalize sm:text-5xl">{title}</h1>
+            <h1 className="mt-2 text-[2rem] font-semibold capitalize leading-tight sm:text-5xl">{title}</h1>
             {content && <p className="mt-3 max-w-xl leading-relaxed text-slate-600">{content.description}</p>}
           </div>
-          {nodes && <ProgressRing percent={progress} />}
+          {nodes && <ProgressRing percent={progress} size={80} />}
         </div>
 
         {content && (
@@ -228,9 +228,9 @@ export default function RoadmapDetailPage() {
               { value: stats.resources, label: 'Resources' },
               { value: stats.skills, label: 'Skills' },
             ].map((s) => (
-              <div key={s.label} className="rounded-2xl border border-line bg-white/80 px-4 py-3">
+              <div key={s.label} className="rounded-xl border border-line bg-white px-4 py-3">
                 <p className="font-display text-2xl font-semibold leading-none">{s.value}</p>
-                <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-400">{s.label}</p>
+                <p className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500">{s.label}</p>
               </div>
             ))}
           </div>
@@ -257,7 +257,7 @@ export default function RoadmapDetailPage() {
               aria-expanded={showStack}
             >
               Tech stack you will touch
-              <span className="text-xs text-slate-400">{showStack ? 'Hide' : 'Show'}</span>
+              <span className="text-xs text-slate-500">{showStack ? 'Hide' : 'Show'}</span>
             </button>
             <AnimatePresence initial={false}>
               {showStack && (
@@ -271,7 +271,7 @@ export default function RoadmapDetailPage() {
                   <div className="mt-3 space-y-3">
                     {stackGroups.map((g) => (
                       <div key={g.label}>
-                        <p className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
                           {g.label} · {g.items.length}
                         </p>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -293,7 +293,7 @@ export default function RoadmapDetailPage() {
 
       {/* Sticky toolbar: segmented progress + filters */}
       {nodes && total > 0 && (
-        <div className="sticky top-20 z-10 mt-8 rounded-2xl border border-line bg-white/90 px-4 py-3 backdrop-blur">
+        <div className="sticky top-20 z-10 mt-8 rounded-2xl border border-line bg-white px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="font-medium text-slate-700">
               {counts.done} of {total} done
@@ -306,7 +306,7 @@ export default function RoadmapDetailPage() {
                   role="tab"
                   aria-selected={filter === f.id}
                   onClick={() => setFilter(f.id)}
-                  className={`rounded-full px-2.5 py-1 font-medium transition-colors ${
+                  className={`inline-flex min-h-8 items-center rounded-full px-3 py-1.5 font-medium transition-colors ${
                     filter === f.id ? 'bg-ink text-white' : 'text-slate-500 hover:bg-slate-100'
                   }`}
                 >
@@ -343,14 +343,7 @@ export default function RoadmapDetailPage() {
           const isLast = index === sections.length - 1
 
           return (
-            <motion.section
-              key={root.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, ease: EASE }}
-              className="relative min-w-0 pb-8 pl-12"
-            >
+            <section key={root.id} className="relative min-w-0 pb-8 pl-12">
               {!isLast && <span className="absolute bottom-0 left-[15px] top-8 w-px bg-line" aria-hidden="true" />}
               <span
                 className={`absolute left-0 top-0 flex h-8 w-8 items-center justify-center rounded-full font-mono text-xs font-bold ring-4 ring-white ${
@@ -363,7 +356,7 @@ export default function RoadmapDetailPage() {
 
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold leading-8">{root.title}</h2>
-                <span className="shrink-0 font-mono text-[11px] text-slate-400">
+                <span className="shrink-0 font-mono text-[11px] text-slate-500">
                   {done}/{stops.length}
                 </span>
               </div>
@@ -379,10 +372,10 @@ export default function RoadmapDetailPage() {
                   return (
                     <li key={stop.id} className="min-w-0">
                       <motion.button
-                        whileHover={{ x: 3 }}
-                        whileTap={{ scale: 0.99 }}
+                        whileHover={{ y: -2 }}
+                        transition={{ duration: 0.2 }}
                         onClick={() => setSelectedId(stop.id)}
-                        className={`group flex w-full items-center gap-3 rounded-xl border bg-white px-4 py-3 text-left transition-colors hover:border-ink ${
+                        className={`group flex w-full items-center gap-3 rounded-xl border bg-white px-4 py-3 text-left transition-colors hover:border-brand ${
                           active ? 'border-brand ring-4 ring-brand/10' : 'border-line'
                         } ${status === 'done' ? 'bg-slate-50/60' : ''}`}
                       >
@@ -391,7 +384,7 @@ export default function RoadmapDetailPage() {
                           <span className={`block truncate text-sm font-medium ${status === 'done' ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900'}`}>
                             {stop.title}
                           </span>
-                          {topic && <span className="mt-0.5 block truncate text-xs text-slate-400">{topic.summary}</span>}
+                          {topic && <span className="mt-0.5 block truncate text-xs text-slate-500">{topic.summary}</span>}
                         </span>
                         {topic && (
                           <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-500 sm:inline">
@@ -407,11 +400,11 @@ export default function RoadmapDetailPage() {
                   )
                 })}
               </ul>
-            </motion.section>
+            </section>
           )
         })}
         {nodes && total > 0 && filter !== 'all' && counts[filter] === 0 && (
-          <p className="rounded-2xl border border-dashed border-line px-4 py-8 text-center text-sm text-slate-400">
+          <p className="rounded-2xl border border-dashed border-line px-4 py-8 text-center text-sm text-slate-500">
             Nothing here yet. Pick another filter.
           </p>
         )}
@@ -426,7 +419,7 @@ export default function RoadmapDetailPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-20 bg-ink/25 backdrop-blur-[2px]"
+              className="fixed inset-0 z-20 bg-ink/30"
               onClick={() => setSelectedId(null)}
               aria-hidden="true"
             />
@@ -436,24 +429,24 @@ export default function RoadmapDetailPage() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 36 }}
-              className="fixed inset-y-0 right-0 z-30 flex w-full max-w-md flex-col border-l border-line bg-white shadow-2xl"
+              className="fixed inset-y-0 right-0 z-30 flex w-full max-w-md flex-col border-l border-line bg-white"
               aria-label={selected.node.title}
             >
               <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
-                <p className="min-w-0 truncate font-mono text-[11px] uppercase tracking-wider text-slate-400">
+                <p className="min-w-0 truncate font-mono text-[11px] uppercase tracking-wider text-slate-500">
                   {selected.sectionIndex + 1}. {selected.section}
                 </p>
                 <div className="flex shrink-0 items-center gap-1">
-                  <span className="mr-1 font-mono text-[11px] text-slate-400">
+                  <span className="mr-1 font-mono text-[11px] text-slate-500">
                     {selectedIndex + 1}/{total}
                   </span>
-                  <button onClick={() => go(-1)} disabled={selectedIndex === 0} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-30" aria-label="Previous topic">
+                  <button onClick={() => go(-1)} disabled={selectedIndex === 0} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-30" aria-label="Previous topic">
                     <Icon d={ICON.left} />
                   </button>
-                  <button onClick={() => go(1)} disabled={selectedIndex === total - 1} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-30" aria-label="Next topic">
+                  <button onClick={() => go(1)} disabled={selectedIndex === total - 1} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-30" aria-label="Next topic">
                     <Icon d={ICON.right} />
                   </button>
-                  <button onClick={() => setSelectedId(null)} className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700" aria-label="Close">
+                  <button onClick={() => setSelectedId(null)} className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink" aria-label="Close">
                     <Icon d={ICON.close} />
                   </button>
                 </div>
@@ -498,13 +491,13 @@ export default function RoadmapDetailPage() {
                         key={s}
                         onClick={() => setStatus(selected.node, s)}
                         aria-pressed={on}
-                        className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                        className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                           on
                             ? s === 'done'
-                              ? 'bg-emerald-500 text-white shadow-sm'
+                              ? 'bg-emerald-500 text-white'
                               : s === 'in_progress'
-                                ? 'bg-brand text-white shadow-sm'
-                                : 'bg-white text-slate-700 shadow-sm'
+                                ? 'bg-brand text-white'
+                                : 'bg-white text-ink'
                             : 'text-slate-500 hover:text-slate-800'
                         }`}
                       >
@@ -513,7 +506,7 @@ export default function RoadmapDetailPage() {
                     )
                   })}
                 </div>
-                <p className="mt-2 text-center text-[11px] text-slate-400">Use the ← → keys to move between topics</p>
+                <p className="mt-2 text-center text-[11px] text-slate-500">Use the ← → keys to move between topics</p>
               </div>
             </motion.aside>
           </>
@@ -530,7 +523,7 @@ function ResourceGroups({ resources }: { resources: Resource[] }) {
 
   return (
     <div className="mt-8">
-      <h4 className="font-mono text-[11px] uppercase tracking-wider text-slate-400">Resources · {resources.length}</h4>
+      <h4 className="font-mono text-[11px] uppercase tracking-wider text-slate-500">Resources · {resources.length}</h4>
       <div className="mt-3 space-y-5">
         {groups.map((group) => (
           <div key={group.type}>
@@ -546,7 +539,7 @@ function ResourceGroups({ resources }: { resources: Resource[] }) {
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium text-slate-900 group-hover:text-brand">{resource.title}</span>
-                      <span className="mt-0.5 block truncate text-xs text-slate-400">{hostOf(resource.url)}</span>
+                      <span className="mt-0.5 block truncate text-xs text-slate-500">{hostOf(resource.url)}</span>
                     </span>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide ${TYPE_META[group.type].badge}`}>
                       {group.type}
