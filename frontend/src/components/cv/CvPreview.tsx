@@ -39,7 +39,7 @@ export default function CvPreview({ data, onPages }: { data: CvData; onPages: (p
   return (
     <div ref={wrap} className="w-full">
       <div
-        className="relative mx-auto overflow-hidden rounded-lg border border-line bg-white shadow-[0_1px_2px_rgba(10,14,26,0.04),0_12px_32px_-16px_rgba(10,14,26,0.2)]"
+        className="relative mx-auto overflow-hidden rounded-md border border-line bg-white"
         style={{ width: PAGE_W * scale, height: height * scale }}
       >
         <div ref={doc} style={{ width: PAGE_W, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
@@ -49,10 +49,10 @@ export default function CvPreview({ data, onPages }: { data: CvData; onPages: (p
           <div
             key={i}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 border-t border-dashed border-blue-600/50"
+            className="pointer-events-none absolute inset-x-0 border-t border-dashed border-brand/50"
             style={{ top: PAGE_H * (i + 1) * scale }}
           >
-            <span className="absolute right-2 top-1 rounded bg-brand-soft px-1.5 py-0.5 font-mono text-[10px] text-blue-700">
+            <span className="absolute right-2 top-1 rounded bg-brand-soft px-1.5 py-0.5 font-mono text-[10px] text-brand">
               Page {i + 2}
             </span>
           </div>

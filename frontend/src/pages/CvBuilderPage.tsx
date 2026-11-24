@@ -59,15 +59,15 @@ export default function CvBuilderPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">CV Builder</p>
-          <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
+          <h1 className="mt-2 text-[2rem] font-semibold leading-tight sm:text-4xl">
             Build a <span className="text-brand">one-page CV</span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-slate-500">
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">
             Fill in your details and get a clean, ATS-friendly CV in the classic Jake&apos;s Resume layout. It is saved in
             this browser only and never sent to our servers.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <button type="button" onClick={downloadPdf} className="btn btn-primary">
             <Icon name="printer" className="h-4 w-4" />
             Download PDF
@@ -79,7 +79,7 @@ export default function CvBuilderPage() {
         </div>
       </header>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y border-line py-3 text-sm">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y border-line py-2 text-sm">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className="font-mono text-[11px] uppercase tracking-wider text-slate-500" role="status">
             {saveState === 'saving' ? 'Saving…' : 'Saved in this browser'}
@@ -90,7 +90,7 @@ export default function CvBuilderPage() {
           >
             {pages === 1 ? (
               <>
-                <Icon name="check" className="h-4 w-4 text-blue-700" />
+                <Icon name="check" className="h-4 w-4 text-brand" />
                 Fits on one page
               </>
             ) : (
@@ -107,14 +107,14 @@ export default function CvBuilderPage() {
             <button
               type="button"
               onClick={() => run(pending)}
-              className="rounded-full px-3 py-1 text-sm font-semibold text-red-700 hover:bg-red-50"
+              className="inline-flex min-h-10 items-center rounded-full px-3 text-sm font-semibold text-red-700 hover:bg-red-50"
             >
               {pending === 'example' ? 'Replace' : 'Clear'}
             </button>
             <button
               type="button"
               onClick={() => setPending(null)}
-              className="rounded-full px-3 py-1 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              className="inline-flex min-h-10 items-center rounded-full px-3 text-sm font-medium text-slate-600 hover:bg-slate-100"
             >
               Cancel
             </button>
@@ -124,7 +124,7 @@ export default function CvBuilderPage() {
             <button
               type="button"
               onClick={() => ask('example')}
-              className="rounded-full px-3 py-1 text-sm font-medium text-blue-700 transition-colors hover:bg-brand-soft"
+              className="inline-flex min-h-10 items-center rounded-full px-3 text-sm font-medium text-brand transition-colors hover:bg-brand-soft"
             >
               Load example
             </button>
@@ -132,7 +132,7 @@ export default function CvBuilderPage() {
               type="button"
               onClick={() => ask('clear')}
               disabled={empty}
-              className="rounded-full px-3 py-1 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
+              className="inline-flex min-h-10 items-center rounded-full px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
             >
               Clear
             </button>
@@ -140,27 +140,27 @@ export default function CvBuilderPage() {
         )}
       </div>
 
-      <div className="mt-5 flex rounded-full bg-slate-100 p-1 lg:hidden" role="group" aria-label="View">
+      <div className="sticky top-[5.25rem] z-10 -mx-4 mt-4 bg-white px-4 py-2 sm:-mx-6 sm:px-6 lg:hidden"><div className="flex rounded-full bg-slate-100 p-1" role="group" aria-label="View">
         {(['edit', 'preview'] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             aria-pressed={tab === t}
-            className={`flex-1 rounded-full py-1.5 text-sm font-medium capitalize transition-colors ${
-              tab === t ? 'bg-white text-ink shadow-sm' : 'text-slate-600'
+            className={`min-h-10 flex-1 rounded-full text-sm font-medium capitalize transition-colors ${
+              tab === t ? 'bg-ink text-white' : 'text-slate-600'
             }`}
           >
             {t}
           </button>
         ))}
-      </div>
+      </div></div>
 
-      <div className="mt-6 grid items-start gap-10 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
         <div className={tab === 'edit' ? '' : 'hidden lg:block'}>
           <CvEditor data={data} onChange={setData} />
         </div>
-        <div className={`${tab === 'preview' ? '' : 'hidden lg:block'} lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:overflow-y-auto`}>
+        <div className={`${tab === 'preview' ? '' : 'hidden lg:block'} lg:sticky lg:top-24 lg:max-h-[calc(100svh-7rem)] lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-line lg:bg-slate-50 lg:p-5`}>
           <CvPreview data={data} onPages={onPages} />
         </div>
       </div>
