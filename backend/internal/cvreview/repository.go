@@ -14,9 +14,9 @@ import (
 var ErrNotFound = errors.New("review not found")
 
 type Review struct {
-	ID         uuid.UUID   `json:"uuid"`
+	ID         uuid.UUID   `json:"id"`
 	TargetRole string      `json:"target_role"`
-	Score      int         `json:"int"`
+	Score      int         `json:"score"`
 	Summary    string      `json:"summary"`
 	Criteria   []Criterion `json:"criteria"`
 	CreatedAt  time.Time   `json:"created_at"`
@@ -67,9 +67,9 @@ func (p *PgxRepository) Save(ctx context.Context, userID uuid.UUID, hash, model 
 		userID, hash, r.TargetRole, r.Score, r.Summary, string(criteria), model))
 }
 
-func (p *PgxRepository) Find(ctx context.Context, userID uuid.UUID, hash, role string, r *Review) (*Review, error) {
+func (p *PgxRepository) Find(ctx context.Context, userID uuid.UUID, hash, role string) (*Review, error) {
 	return scanReview(p.db.QueryRow(ctx,
-		`SELECT `+columns+`FROM cv_reviews
+		`SELECT `+columns+` FROM cv_reviews
 		WHERE user_id = $1 AND file_sha256 = $2 AND target_role = $3
 		`, userID, hash, role))
 }

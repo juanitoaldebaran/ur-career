@@ -17,6 +17,7 @@ import (
 	"github.com/juanitoaldebaran/ur-career-backend/internal/auth"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/cache"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/consultation"
+	"github.com/juanitoaldebaran/ur-career-backend/internal/cvreview"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/practice"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/practice/ai"
 	"github.com/juanitoaldebaran/ur-career-backend/internal/profile"
@@ -104,6 +105,14 @@ func main() {
 		consultation.NewProfileSnapshot(profileService),
 	)
 	consultation.NewHandler(consultService).RegisterRoutes(mux, handler.Authenticate, consultLimiter.RedisLimit)
+
+	var cvStore ratelimit.Store = ratelimit.NewMemory(5, time.Hour)
+	if rdb != nil {
+		cvStore = ratelimit.NewRedis(rdb, "rl:cvreview:", 5, time.Hour)
+	}
+	cvLimiter := ratelimit.NewRedisLimiter(cvStore, 5, true, consultation.UserKey)
+	cvService := cvreview.NewService(cvreview.NewPgxRepository(pool), cvreview.NewGeminiGrader(gemini))
+	cvreview.NewHandler(cvService).RegisterRoutes(mux, handler.Authenticate, cvLimiter.RedisLimit)
 
 	practiceRepo := practice.NewPgxRepository(pool)
 	practiceGrader := practice.NewGeminiGrader(gemini)
