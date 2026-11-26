@@ -16,6 +16,7 @@ import { Icon, type IconName } from './icons'
 const NAV_ITEMS: { label: string; to: string; icon: IconName }[] = [
   { label: 'Consultation', to: '/consultation', icon: 'chat' },
   { label: 'CV Builder', to: '/cv-builder', icon: 'file' },
+  { label: 'CV Review', to: '/cv-review', icon: 'upload' },
   { label: 'Roadmap', to: '/roadmap', icon: 'map' },
   { label: 'Practice', to: '/practice', icon: 'code' },
 ]
@@ -95,7 +96,7 @@ export default function Navbar() {
                   to={item.to}
                   aria-label={item.label}
                   title={item.label}
-                  className={`relative isolate flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium transition-colors duration-150 @[44rem]:px-3.5 ${
+                  className={`relative isolate flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium transition-colors duration-150 @[54rem]:px-3.5 ${
                     active ? 'text-white' : 'text-slate-600 hover:bg-ink/5 hover:text-ink'
                   }`}
                 >
@@ -107,7 +108,7 @@ export default function Navbar() {
                     />
                   )}
                   <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                  <span className="hidden @[44rem]:inline">{item.label}</span>
+                  <span className="hidden @[54rem]:inline">{item.label}</span>
                 </NavLink>
               )
             })}

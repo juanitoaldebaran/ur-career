@@ -33,7 +33,6 @@ func (g *Gemini) GenerateJSON(ctx context.Context, system, user string, schema m
 	return g.generateJSON(ctx, system, []map[string]any{{"text": user}}, schema, temperature)
 }
 
-// GenerateJSONFromPDF is GenerateJSON with a PDF attached to the user turn.
 func (g *Gemini) GenerateJSONFromPDF(ctx context.Context, system, user string, pdf []byte, schema map[string]any, temperature float64) ([]byte, error) {
 	parts := []map[string]any{
 		// encoding/json turns []byte into base64, which is what Gemini expects.
