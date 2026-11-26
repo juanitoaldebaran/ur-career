@@ -60,6 +60,12 @@ const PATHS = {
       <rect x="6" y="14" width="12" height="8" rx="1" />
     </>
   ),
+  upload: (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="m17 8-5-5-5 5M12 3v12" />
+    </>
+  ),
   check: <path d="M20 6 9 17l-5-5" />,
   trash: <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />,
 } satisfies Record<string, ReactNode>

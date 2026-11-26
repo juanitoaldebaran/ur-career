@@ -13,7 +13,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      // For FormData the browser must set the type itself, with the multipart boundary.
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
   })
@@ -411,4 +412,31 @@ export async function streamMessage(
       buffer = buffer.slice(cut + 2)
     }
   }
+}
+
+export interface CvCriterion {
+  name: string
+  score: number
+  max: number
+  comment: string
+}
+
+export interface CvReview {
+  id: string
+  target_role: string
+  score: number
+  summary: string
+  criteria: CvCriterion[]
+  created_at: string
+}
+
+export function reviewCv(file: File, targetRole: string, accessToken: string): Promise<CvReview> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('target_role', targetRole)
+  return request('/cv/reviews', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: form,
+  })
 }
